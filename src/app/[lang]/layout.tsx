@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Suspense, use } from 'react';
 import { LanguageProvider } from '@/components/LanguageProvider';
 import { TranslationProvider } from '@/components/TranslationProvider';
@@ -8,13 +9,13 @@ import type { Language } from '@/lib/i18n/types';
 
 interface RootLayoutProps {
   children: React.ReactNode;
-  params: Promise<{
+  params: {
     lang: Language;
-  }>;
+  };
 }
 
 export default function LangLayout({ children, params }: RootLayoutProps) {
-  const { lang } = use(params);
+  const { lang } = params;
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
