@@ -1,17 +1,19 @@
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "JustAnimeHub",
+  description: "A collaborative anime encyclopedia with multilingual support",
+};
 
 export default function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
 }) {
-  const lang = params?.lang ?? 'en';
-
   return (
-    <html lang={lang} className="dark">
+    <html className="dark">
       <body className="min-h-screen bg-neutral-950 text-white">
         {children}
         <Toaster />

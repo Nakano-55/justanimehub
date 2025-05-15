@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Suspense, use } from 'react';
+import { Suspense } from 'react';
 import { LanguageProvider } from '@/components/LanguageProvider';
 import { TranslationProvider } from '@/components/TranslationProvider';
 import { GamificationProvider } from '@/components/GamificationProvider';
@@ -7,14 +6,14 @@ import Navbar from '@/components/Navbar';
 import { ClientLayout } from '@/components/ClientLayout';
 import type { Language } from '@/lib/i18n/types';
 
-interface RootLayoutProps {
+interface LangLayoutProps {
   children: React.ReactNode;
   params: {
     lang: Language;
   };
 }
 
-export default function LangLayout({ children, params }: RootLayoutProps) {
+export default function LangLayout({ children, params }: LangLayoutProps) {
   const { lang } = params;
 
   return (

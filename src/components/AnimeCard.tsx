@@ -39,7 +39,8 @@ export function AnimeCard({ anime, index, lang }: AnimeCardProps) {
         const { data: bookmarks } = await supabase
           .from('bookmarks')
           .select('category')
-          .eq('jikan_id', anime.mal_id)
+          .eq('entity_id', anime.mal_id)
+          .eq('entity_type', 'anime')
           .eq('user_id', user.id);
 
         if (bookmarks) {
@@ -57,7 +58,6 @@ export function AnimeCard({ anime, index, lang }: AnimeCardProps) {
   }, [anime.mal_id, supabase]);
 
   const handleBookmark = async (category: 'favorite' | 'planned', e: React.MouseEvent) => {
-    // Prevent event from bubbling up to the Link component
     e.preventDefault();
     e.stopPropagation();
 
@@ -80,7 +80,8 @@ export function AnimeCard({ anime, index, lang }: AnimeCardProps) {
         const { error } = await supabase
           .from('bookmarks')
           .delete()
-          .eq('jikan_id', anime.mal_id)
+          .eq('entity_id', anime.mal_id)
+          .eq('entity_type', 'anime')
           .eq('user_id', user.id)
           .eq('category', category);
 
@@ -93,9 +94,13 @@ export function AnimeCard({ anime, index, lang }: AnimeCardProps) {
         const { error } = await supabase
           .from('bookmarks')
           .insert({
-            jikan_id: anime.mal_id,
+            entity_id: anime.mal_id,
+            entity_type: 'anime',
             user_id: user.id,
             category,
+            title: anime.title,
+            title_english: anime.title_english,
+            image_url: anime.images.jpg.image_url,
           });
 
         if (error) throw error;
