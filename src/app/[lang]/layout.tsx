@@ -8,13 +8,11 @@ import type { Language } from '@/lib/i18n/types';
 
 interface LangLayoutProps {
   children: React.ReactNode;
-  params: {
-    lang: Language;
-  };
+  params: Promise<{ lang: Language }>;
 }
 
-export default function LangLayout({ children, params }: LangLayoutProps) {
-  const { lang } = params;
+export default async function LangLayout({ children, params }: LangLayoutProps) {
+  const { lang } = await params;
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -23,9 +21,7 @@ export default function LangLayout({ children, params }: LangLayoutProps) {
           <GamificationProvider>
             <ClientLayout>
               <Navbar />
-              <main className="pt-16">
-                {children}
-              </main>
+              <main className="pt-16">{children}</main>
             </ClientLayout>
           </GamificationProvider>
         </TranslationProvider>
