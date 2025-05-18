@@ -21,8 +21,7 @@ export default function OngoingAnimePage() {
   const defaultFilters = {
     title: t.title,
     description: t.description,
-    selectedStatus: 'airing',
-    selectedSort: 'bypopularity',
+    endpoint: 'seasons/now', // Use the seasons/now endpoint to get currently airing anime
   };
 
   return <AnimePage defaultFilters={defaultFilters} />;
