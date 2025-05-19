@@ -17,7 +17,7 @@ export default function AuthCallbackClient() {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const code = searchParams.get('token_hash');
+        const code = searchParams.get('code');
         const type = searchParams.get('type');
         
         if (!code || !type) throw new Error('Missing verification parameters');
