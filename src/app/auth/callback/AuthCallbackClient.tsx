@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -22,10 +21,7 @@ export default function AuthCallbackClient() {
         
         if (!code || !type) throw new Error('Missing verification parameters');
 
-        const { error } = await supabase.auth.verifyOtp({
-          type: type as any,
-          token_hash: code,
-        });
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) throw error;
 
