@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -56,38 +57,27 @@ export function AuthButton() {
           email,
           password,
           options: {
+            data: {
+              username,
+              full_name: fullName,
+            },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
 
         if (signUpError) throw signUpError;
 
-        if (!data.session) {
-          toast({
-            title: 'Verify your email',
-            description: 'We have sent you a verification link.',
-          });
-          return;
-        }
-
-        if (data.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: data.user.id,
-              email: data.user.email ?? '',
-              username,
-              full_name: fullName,
-              updated_at: new Date().toISOString(),
-            });
-
-          if (profileError) throw profileError;
-        }
-
         toast({
-          title: 'Success!',
-          description: 'Account created successfully.',
+          title: 'Verify your email',
+          description: 'Please check your email for the verification link.',
         });
+        
+        setIsOpen(false);
+        setEmail('');
+        setPassword('');
+        setUsername('');
+        setFullName('');
+        
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -100,13 +90,12 @@ export function AuthButton() {
           title: 'Welcome back!',
           description: 'Successfully signed in.',
         });
+        
+        setIsOpen(false);
+        setEmail('');
+        setPassword('');
       }
 
-      setIsOpen(false);
-      setEmail('');
-      setPassword('');
-      setUsername('');
-      setFullName('');
       setError(null);
     } catch (err: any) {
       console.error('Auth error:', err);

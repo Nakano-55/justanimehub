@@ -17,17 +17,16 @@ export default function AuthCallbackClient() {
     const verifyEmail = async () => {
       try {
         const code = searchParams.get('code');
-        const type = searchParams.get('type');
-
+        
         if (!code) throw new Error('No verification code provided');
 
-        if (type === 'signup' || type === 'recovery') {
-          const { error } = await supabase.auth.verifyOtp({ type, token_hash: code });
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-        }
+        // Handle the email verification
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: code,
+          type: 'email'
+        });
+
+        if (error) throw error;
 
         setStatus('success');
         setTimeout(() => {
