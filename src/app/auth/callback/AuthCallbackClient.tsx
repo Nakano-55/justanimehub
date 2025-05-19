@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,14 +17,14 @@ export default function AuthCallbackClient() {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const code = searchParams.get('code');
+        const code = searchParams.get('token_hash');
+        const type = searchParams.get('type');
         
-        if (!code) throw new Error('No verification code provided');
+        if (!code || !type) throw new Error('Missing verification parameters');
 
-        // Handle the email verification
         const { error } = await supabase.auth.verifyOtp({
+          type: type as any,
           token_hash: code,
-          type: 'email'
         });
 
         if (error) throw error;
@@ -65,6 +66,12 @@ export default function AuthCallbackClient() {
             <XCircle className="w-12 h-12 text-red-500" />
             <p className="text-lg">Verification failed</p>
             <p className="text-sm text-red-400">{errorMessage}</p>
+            <button 
+              onClick={() => router.push('/')}
+              className="mt-4 px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg"
+            >
+              Return to Home
+            </button>
           </>
         )}
       </div>
