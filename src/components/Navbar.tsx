@@ -152,37 +152,37 @@ export default function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48 bg-neutral-900 border-neutral-800">
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime`} className="dropdown-menu-item">
                       {t.allAnime}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime/popular`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime/popular`} className="dropdown-menu-item">
                       {t.popular}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime/top-rated`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime/top-rated`} className="dropdown-menu-item">
                       {t.topRated}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime/ongoing`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime/ongoing`} className="dropdown-menu-item">
                       {t.ongoing}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime/upcoming`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime/upcoming`} className="dropdown-menu-item">
                       {t.upcoming}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime/movies`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime/movies`} className="dropdown-menu-item">
                       {t.movies}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${lang}/anime/favorites`} className="flex items-center gap-2">
+                    <Link href={`/${lang}/anime/favorites`} className="dropdown-menu-item">
                       {t.mostFavorited}
                     </Link>
                   </DropdownMenuItem>

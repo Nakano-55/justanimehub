@@ -44,6 +44,8 @@ const translations = {
     plannedList: 'Your Watch List',
     favoriteDescription: 'Content you love and want to remember',
     plannedDescription: 'Anime you plan to watch later',
+    anime: 'Anime',
+    characters: 'Characters',
   },
   id: {
     bookmarks: 'Bookmark Saya',
@@ -64,6 +66,8 @@ const translations = {
     plannedList: 'Daftar Tonton Anda',
     favoriteDescription: 'Konten yang Anda sukai dan ingin diingat',
     plannedDescription: 'Anime yang ingin Anda tonton nanti',
+    anime: 'Anime',
+    characters: 'Karakter',
   },
 } as const;
 
@@ -86,10 +90,10 @@ const BookmarkCard = ({ bookmark, lang }: { bookmark: BookmarkData; lang: Langua
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="group relative bg-neutral-800/50 backdrop-blur-sm rounded-xl hover:bg-neutral-700/50 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full"
+      className="group relative bg-neutral-800/50 backdrop-blur-sm rounded-xl hover:bg-neutral-700/50 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden border border-neutral-700/50 hover:border-violet-500/50"
       layout
     >
-      <div className="relative overflow-hidden rounded-t-xl">
+      <div className="relative overflow-hidden">
         <Image
           src={bookmark.image_url || fallbackImage}
           width={300}
@@ -104,21 +108,30 @@ const BookmarkCard = ({ bookmark, lang }: { bookmark: BookmarkData; lang: Langua
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
           <Link
             href={`/${lang}/${bookmark.entity_type}/${bookmark.entity_id}`}
-            className="w-full py-2 bg-violet-600 hover:bg-violet-500 text-center rounded-lg text-sm font-medium"
+            className="w-full py-2 bg-violet-600 hover:bg-violet-500 text-center rounded-lg text-sm font-medium transition-colors"
           >
             {t.viewDetails}
           </Link>
         </div>
+        <div className="absolute top-2 right-2">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            bookmark.entity_type === 'anime' 
+              ? 'bg-violet-500/20 text-violet-300' 
+              : 'bg-pink-500/20 text-pink-300'
+          }`}>
+            {bookmark.entity_type === 'anime' ? t.anime : t.characters}
+          </span>
+        </div>
       </div>
 
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-4 flex flex-col flex-grow bg-gradient-to-b from-neutral-800/50 to-neutral-900/50">
         <h3 className="text-lg font-medium line-clamp-2 group-hover:text-violet-400 transition-colors mb-2">
           {bookmark.title_english || bookmark.title}
         </h3>
 
         <div className="space-y-2 mt-auto">
-          <div className="pt-2 mt-2 border-t border-neutral-700">
-            <p className="text-xs text-neutral-500">
+          <div className="pt-2 mt-2 border-t border-neutral-700/50">
+            <p className="text-xs text-neutral-400">
               {t.addedOn}: {formatDate(bookmark.created_at)}
             </p>
           </div>
@@ -245,6 +258,8 @@ export default function BookmarkPage() {
   }
 
   const filteredBookmarks = bookmarks.filter(b => b.category === activeTab);
+  const animeBookmarks = filteredBookmarks.filter(b => b.entity_type === 'anime');
+  const characterBookmarks = filteredBookmarks.filter(b => b.entity_type === 'character');
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white pt-20">
@@ -316,14 +331,42 @@ export default function BookmarkPage() {
                 </motion.div>
               ) : (
                 <AnimatePresence>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    {filteredBookmarks.map((bookmark) => (
-                      <BookmarkCard
-                        key={bookmark.id}
-                        bookmark={bookmark}
-                        lang={lang}
-                      />
-                    ))}
+                  <div className="space-y-12">
+                    {animeBookmarks.length > 0 && (
+                      <div>
+                        <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                          <span className="w-2 h-2 bg-violet-500 rounded-full"></span>
+                          {t.anime}
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                          {animeBookmarks.map((bookmark) => (
+                            <BookmarkCard
+                              key={bookmark.id}
+                              bookmark={bookmark}
+                              lang={lang}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {characterBookmarks.length > 0 && (
+                      <div>
+                        <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                          <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
+                          {t.characters}
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                          {characterBookmarks.map((bookmark) => (
+                            <BookmarkCard
+                              key={bookmark.id}
+                              bookmark={bookmark}
+                              lang={lang}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </AnimatePresence>
               )}

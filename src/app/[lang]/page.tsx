@@ -117,7 +117,7 @@ export default function HomePage({ params }: PageProps) {
               {t.browseAnime}
             </Link>
             <Link
-              href={`/${lang}/profile`}
+              href={`/${lang}/contribute/guidelines`}
               className="px-8 py-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-lg font-medium transition-colors"
             >
               {t.startContributing}

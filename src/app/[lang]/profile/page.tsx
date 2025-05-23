@@ -15,7 +15,8 @@ import { UserPoints } from '@/components/UserPoints';
 import { motion } from 'framer-motion';
 import {
   User, Settings, Star, BookmarkCheck, Heart, Loader2, PenLine,
-  Calendar, AlertCircle, Save, X, ChevronRight, Trophy, ImageOff
+  Calendar, AlertCircle, Save, X, ChevronRight, Trophy, ImageOff,
+  CheckCircle, AlertTriangle
 } from 'lucide-react';
 import type { Database } from '@/lib/database.types';
 
@@ -60,6 +61,17 @@ const translations = {
     addedOn: 'Added on',
     favorites: 'Favorites',
     planned: 'Plan to Watch',
+    validation: {
+      usernameRequired: 'Username is required',
+      usernameLength: 'Username must be between 3 and 20 characters',
+      usernameFormat: 'Username can only contain letters, numbers, and underscores',
+      fullNameLength: 'Full name must be less than 50 characters',
+      fullNameFormat: 'Full name can only contain letters and spaces',
+    },
+    inputHelp: {
+      username: 'Choose a unique username (3-20 characters, letters, numbers, underscores)',
+      fullName: 'Enter your full name (max 50 characters)',
+    },
   },
   id: {
     profile: 'Profil',
@@ -101,6 +113,17 @@ const translations = {
     addedOn: 'Ditambahkan pada',
     favorites: 'Favorit',
     planned: 'Rencana Tonton',
+    validation: {
+      usernameRequired: 'Username wajib diisi',
+      usernameLength: 'Username harus antara 3 dan 20 karakter',
+      usernameFormat: 'Username hanya boleh berisi huruf, angka, dan garis bawah',
+      fullNameLength: 'Nama lengkap harus kurang dari 50 karakter',
+      fullNameFormat: 'Nama lengkap hanya boleh berisi huruf dan spasi',
+    },
+    inputHelp: {
+      username: 'Pilih username unik (3-20 karakter, huruf, angka, garis bawah)',
+      fullName: 'Masukkan nama lengkap Anda (maks 50 karakter)',
+    },
   },
 } as const;
 
@@ -140,6 +163,10 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     username: '',
     full_name: '',
+  });
+  const [formErrors, setFormErrors] = useState({
+    username: '',
+    fullName: '',
   });
   const [stats, setStats] = useState({
     totalReviews: 0,
@@ -257,7 +284,39 @@ export default function ProfilePage() {
     fetchProfile();
   }, [supabase, t.error, lang]);
 
+  const validateForm = (): boolean => {
+    const errors = {
+      username: '',
+      fullName: '',
+    };
+
+    // Username validation
+    if (!formData.username.trim()) {
+      errors.username = t.validation.usernameRequired;
+    } else if (formData.username.length < 3 || formData.username.length > 20) {
+      errors.username = t.validation.usernameLength;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      errors.username = t.validation.usernameFormat;
+    }
+
+    // Full name validation
+    if (formData.full_name) {
+      if (formData.full_name.length > 50) {
+        errors.fullName = t.validation.fullNameLength;
+      } else if (!/^[a-zA-Z\s]*$/.test(formData.full_name)) {
+        errors.fullName = t.validation.fullNameFormat;
+      }
+    }
+
+    setFormErrors(errors);
+    return !errors.username && !errors.fullName;
+  };
+
   const handleUpdateProfile = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       setIsUpdating(true);
       const { data: { user } } = await supabase.auth.getUser();
@@ -266,8 +325,8 @@ export default function ProfilePage() {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          username: formData.username,
-          full_name: formData.full_name,
+          username: formData.username.trim(),
+          full_name: formData.full_name.trim(),
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -653,31 +712,80 @@ export default function ProfilePage() {
                     <div>
                       <label className="block text-sm font-medium mb-2">
                         {t.username}
+                        {isEditing && (
+                          <span className="text-xs text-neutral-400 ml-2">
+                            {t.inputHelp.username}
+                          </span>
+                        )}
                       </label>
-                      <Input
-                        value={formData.username}
-                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                        disabled={!isEditing}
-                        className="bg-neutral-800 border-neutral-700"
-                      />
+                      <div className="relative">
+                        <Input
+                          value={formData.username}
+                          onChange={(e) => {
+                            setFormData({ ...formData, username: e.target.value });
+                            if (formErrors.username) validateForm();
+                          }}
+                          disabled={!isEditing}
+                          className={`bg-neutral-800 border-neutral-700 pr-10 ${
+                            isEditing && formErrors.username ? 'border-red-500' : 
+                            isEditing && formData.username ? 'border-green-500' : ''
+                          }`}
+                        />
+                        {isEditing && (
+                          
+                          <div className="absolute right-3 top-2.5">
+                            {formErrors.username ? (
+                              <AlertTriangle className="w-5 h-5 text-red-500" />
+                            ) : formData.username && (
+                              <CheckCircle className="w-5 h-5 text-green-500" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {isEditing && formErrors.username && (
+                        <p className="mt-1 text-sm text-red-500">{formErrors.username}</p>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium mb-2">
                         {t.fullName}
+                        {isEditing && (
+                          <span className="text-xs text-neutral-400 ml-2">
+                            {t.inputHelp.fullName}
+                          </span>
+                        )}
                       </label>
-                      <Input
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                        disabled={!isEditing}
-                        className="bg-neutral-800 border-neutral-700"
-                      />
+                      <div className="relative">
+                        <Input
+                          value={formData.full_name}
+                          onChange={(e) => {
+                            setFormData({ ...formData, full_name: e.target.value });
+                            if (formErrors.fullName) validateForm();
+                          }}
+                          disabled={!isEditing}
+                          className={`bg-neutral-800 border-neutral-700 pr-10 ${
+                            isEditing && formErrors.fullName ? 'border-red-500' : 
+                            isEditing && formData.full_name ? 'border-green-500' : ''
+                          }`}
+                        />
+                        {isEditing && formData.full_name && (
+                          <div className="absolute right-3 top-2.5">
+                            {formErrors.fullName ? (
+                              <AlertTriangle className="w-5 h-5 text-red-500" />
+                            ) : (
+                              <CheckCircle className="w-5 h-5 text-green-500" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {isEditing && formErrors.fullName && (
+                        <p className="mt-1 text-sm text-red-500">{formErrors.fullName}</p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t.email}
-                      </label>
+                      <label className="block text-sm font-medium mb-2">{t.email}</label>
                       <Input
                         value={profile.email}
                         disabled
@@ -686,9 +794,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t.joinDate}
-                      </label>
+                      <label className="block text-sm font-medium mb-2">{t.joinDate}</label>
                       <div className="flex items-center text-neutral-400">
                         <Calendar className="w-4 h-4 mr-2" />
                         {formatDate(profile.created_at)}
@@ -705,6 +811,7 @@ export default function ProfilePage() {
                               username: profile.username || '',
                               full_name: profile.full_name || '',
                             });
+                            setFormErrors({ username: '', fullName: '' });
                           }}
                           disabled={isUpdating}
                         >
@@ -713,7 +820,7 @@ export default function ProfilePage() {
                         </Button>
                         <Button
                           onClick={handleUpdateProfile}
-                          disabled={isUpdating}
+                          disabled={isUpdating || !!formErrors.username || !!formErrors.fullName}
                           className="bg-violet-600 hover:bg-violet-500"
                         >
                           {isUpdating ? (
