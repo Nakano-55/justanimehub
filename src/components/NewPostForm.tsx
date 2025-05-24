@@ -7,13 +7,13 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { Loader2 } from 'lucide-react';
-import { extractMentions } from '@/lib/utils';
 import type { Database } from '@/lib/database.types';
 import type { Language } from '@/lib/i18n/types';
 
 interface NewPostFormProps {
   threadId: string;
   lang: Language;
+  onSuccess?: () => void;
 }
 
 const translations = {
@@ -37,7 +37,7 @@ const translations = {
   }
 } as const;
 
-export function NewPostForm({ threadId, lang }: NewPostFormProps) {
+export function NewPostForm({ threadId, lang, onSuccess }: NewPostFormProps) {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -89,37 +89,12 @@ export function NewPostForm({ threadId, lang }: NewPostFormProps) {
         });
       }
 
-      // Handle mentions
-      const mentions = extractMentions(content);
-      if (mentions.length > 0) {
-        const { data: users } = await supabase
-          .from('profiles')
-          .select('id, username')
-          .in('username', mentions);
-
-        if (users) {
-          await Promise.all(users.map(mentionedUser => 
-            mentionedUser.id !== user.id && // Don't notify if user mentions themselves
-            supabase.from('notifications').insert({
-              user_id: mentionedUser.id,
-              type: 'mention',
-              message: `@${user.email} mentioned you in a post`,
-              link: `/${lang}/anime/${threadData?.anime_id}`,
-              data: {
-                threadId,
-                postId: newPost.id,
-                content: content.substring(0, 100),
-                mentionedBy: user.email
-              }
-            })
-          ));
-        }
-      }
-
       setContent('');
       toast({
         description: t.success,
       });
+
+      onSuccess?.();
     } catch (error) {
       console.error('Error posting reply:', error);
       toast({

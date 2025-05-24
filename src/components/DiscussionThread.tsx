@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,9 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Card } from './ui/card';
 import { ThreadPost } from '@/components/ThreadPost';
 import { NewPostForm } from '@/components/NewPostForm';
-import { MessageSquare, Clock, User, Loader2, AlertCircle } from 'lucide-react';
+import { MessageSquare, Clock, User, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
+import { Button } from './ui/button';
+import Link from 'next/link';
 import type { Database } from '@/lib/database.types';
 import type { Language } from '@/lib/i18n/types';
 
@@ -21,32 +24,23 @@ interface Thread {
   } | null;
 }
 
-interface Post {
-  id: string;
-  content: string;
-  created_by: string;
-  created_at: string;
-  profiles?: {
-    username: string | null;
-    full_name: string | null;
-  } | null;
-}
-
-interface DiscussionThreadProps {
+interface ThreadListProps {
   threadId: string;
   lang: Language;
 }
 
 const translations = {
   en: {
-    loading: 'Loading discussion...',
-    error: 'Failed to load discussion',
-    noReplies: 'No replies yet. Be the first to reply!',
+    loading: 'Loading discussions...',
+    error: 'Failed to load discussions',
+    noThreads: 'No discussions yet. Start a new one!',
+    startDiscussion: 'Start a Discussion',
     postedBy: 'Posted by',
     on: 'on',
     replies: 'replies',
     anonymous: 'Anonymous',
-    startDiscussion: 'Start a Discussion',
+    viewThread: 'View Thread',
+    createThread: 'Create Thread',
     discussionTitle: 'Discussion Title',
     discussionContent: 'Discussion Content',
     submit: 'Submit Discussion',
@@ -58,12 +52,14 @@ const translations = {
   id: {
     loading: 'Memuat diskusi...',
     error: 'Gagal memuat diskusi',
-    noReplies: 'Belum ada balasan. Jadilah yang pertama membalas!',
+    noThreads: 'Belum ada diskusi. Mulai yang baru!',
+    startDiscussion: 'Mulai Diskusi',
     postedBy: 'Diposting oleh',
     on: 'pada',
     replies: 'balasan',
     anonymous: 'Anonim',
-    startDiscussion: 'Mulai Diskusi',
+    viewThread: 'Lihat Thread',
+    createThread: 'Buat Thread',
     discussionTitle: 'Judul Diskusi',
     discussionContent: 'Konten Diskusi',
     submit: 'Kirim Diskusi',
@@ -74,23 +70,21 @@ const translations = {
   }
 } as const;
 
-export function DiscussionThread({ threadId, lang }: DiscussionThreadProps) {
-  const [thread, setThread] = useState<Thread | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
+export function DiscussionThread({ threadId, lang }: ThreadListProps) {
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
   const supabase = createClientComponentClient<Database>();
   const t = translations[lang];
 
-  // Fetch thread and posts
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchThreads = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Fetch thread details
-        const { data: threadData, error: threadError } = await supabase
+        const { data, error: threadsError } = await supabase
           .from('threads')
           .select(`
             *,
@@ -101,82 +95,32 @@ export function DiscussionThread({ threadId, lang }: DiscussionThreadProps) {
           `)
           .eq('anime_id', parseInt(threadId))
           .eq('language', lang)
-          .single();
+          .order('created_at', { ascending: false });
 
-        if (threadError && threadError.code !== 'PGRST116') {
-          throw threadError;
-        }
-
-        setThread(threadData);
-
-        // Fetch posts if thread exists
-        if (threadData) {
-          const { data: postsData, error: postsError } = await supabase
-            .from('posts')
-            .select(`
-              *,
-              profiles (
-                username,
-                full_name
-              )
-            `)
-            .eq('thread_id', threadData.id)
-            .order('created_at', { ascending: true });
-
-          if (postsError) throw postsError;
-          setPosts(postsData || []);
-        }
+        if (threadsError) throw threadsError;
+        setThreads(data || []);
       } catch (err) {
-        console.error('Error fetching thread:', err);
+        console.error('Error fetching threads:', err);
         setError(t.error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [threadId, lang, supabase, t.error]);
-
-  // Set up realtime subscription
-  useEffect(() => {
-    if (!thread?.id) return;
+    fetchThreads();
 
     const channel = supabase
-      .channel(`thread-${thread.id}`)
+      .channel('thread-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'posts',
-          filter: `thread_id=eq.${thread.id}`,
+          table: 'threads',
+          filter: `anime_id=eq.${threadId}`,
         },
-        async (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const { data: newPost, error } = await supabase
-              .from('posts')
-              .select(`
-                *,
-                profiles (
-                  username,
-                  full_name
-                )
-              `)
-              .eq('id', payload.new.id)
-              .single();
-
-            if (!error && newPost) {
-              setPosts(current => [...current, newPost]);
-            }
-          } else if (payload.eventType === 'DELETE') {
-            setPosts(current => current.filter(post => post.id !== payload.old.id));
-          } else if (payload.eventType === 'UPDATE') {
-            setPosts(current =>
-              current.map(post =>
-                post.id === payload.new.id ? { ...post, ...payload.new } : post
-              )
-            );
-          }
+        () => {
+          fetchThreads();
         }
       )
       .subscribe();
@@ -184,7 +128,19 @@ export function DiscussionThread({ threadId, lang }: DiscussionThreadProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [thread?.id, supabase]);
+  }, [threadId, lang, supabase, t.error]);
+
+  const toggleThread = (threadId: string) => {
+    setExpandedThreads(prev => {
+      const next = new Set(prev);
+      if (next.has(threadId)) {
+        next.delete(threadId);
+      } else {
+        next.add(threadId);
+      }
+      return next;
+    });
+  };
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', {
@@ -212,57 +168,63 @@ export function DiscussionThread({ threadId, lang }: DiscussionThreadProps) {
     );
   }
 
-  if (!thread) {
-    return <NewThreadForm animeId={parseInt(threadId)} lang={lang} />;
-  }
-
   return (
     <div className="space-y-6">
-      <Card className="bg-neutral-900 border-neutral-800 p-6">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-bold">{thread.title}</h1>
-          
-          <div className="flex items-center gap-4 text-sm text-neutral-400">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span>
-                {t.postedBy} {thread.profiles?.username || thread.profiles?.full_name || t.anonymous}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>{formatDate(thread.created_at)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              <span>{posts.length} {t.replies}</span>
-            </div>
-          </div>
-
-          <div className="mt-4 text-neutral-200 whitespace-pre-line">
-            {thread.content}
-          </div>
-        </div>
-      </Card>
+      <NewThreadForm animeId={parseInt(threadId)} lang={lang} />
 
       <div className="space-y-4">
-        {posts.length === 0 ? (
-          <p className="text-center text-neutral-400 py-8">{t.noReplies}</p>
+        {threads.length === 0 ? (
+          <p className="text-center text-neutral-400 py-8">{t.noThreads}</p>
         ) : (
-          posts.map((post) => (
-            <ThreadPost
-              key={post.id}
-              post={post}
-              lang={lang}
-            />
+          threads.map((thread) => (
+            <Card key={thread.id} className="bg-neutral-900 border-neutral-800 p-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">{thread.title}</h3>
+                    <div className="flex items-center gap-4 text-sm text-neutral-400">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        <span>
+                          {t.postedBy} {thread.profiles?.username || thread.profiles?.full_name || t.anonymous}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>{formatDate(thread.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/${lang}/thread/${thread.id}`}
+                    className="flex items-center gap-1 text-violet-400 hover:text-violet-300"
+                  >
+                    {t.viewThread}
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                <div className={`overflow-hidden transition-all duration-300 ${
+                  expandedThreads.has(thread.id) ? 'max-h-full' : 'max-h-24'
+                }`}>
+                  <p className="text-neutral-300 whitespace-pre-line">{thread.content}</p>
+                </div>
+
+                {thread.content.length > 100 && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleThread(thread.id)}
+                    className="text-sm text-neutral-400 hover:text-white"
+                  >
+                    {expandedThreads.has(thread.id) ? 'Show Less' : 'Show More'}
+                  </Button>
+                )}
+              </div>
+            </Card>
           ))
         )}
       </div>
-
-      <NewPostForm
-        threadId={thread.id}
-        lang={lang}
-      />
     </div>
   );
 }
@@ -302,7 +264,9 @@ function NewThreadForm({ animeId, lang }: NewThreadFormProps) {
 
       if (submitError) throw submitError;
 
-      window.location.reload();
+      setTitle('');
+      setContent('');
+      
     } catch (error) {
       console.error('Error creating thread:', error);
       alert(error instanceof Error ? error.message : t.createError);
