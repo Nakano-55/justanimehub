@@ -2,6 +2,7 @@
 
 import { LogOut, User } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,7 @@ const translations = {
 export function UserMenu({ email }: UserMenuProps) {
   const { lang } = useLanguage();
   const { toast } = useToast();
+  const router = useRouter();
   const supabase = createClientComponentClient();
   const t = translations[lang];
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -66,6 +68,7 @@ export function UserMenu({ email }: UserMenuProps) {
       toast({
         description: t.signOutSuccess,
       });
+      router.push(`/${lang}`);
     } catch (error) {
       console.error('Sign out error:', error);
       toast({

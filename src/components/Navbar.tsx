@@ -11,7 +11,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NotificationBell } from '@/components/NotificationBell';
 import { motion } from 'framer-motion';
-import { Heart, BookmarkCheck, ChevronDown } from 'lucide-react';
+import { Heart, BookmarkCheck, ChevronDown, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,7 @@ const translations = {
   en: {
     home: 'Home',
     anime: 'Anime',
+    about: 'About Us',
     bookmarks: 'Bookmarks',
     favorites: 'Favorites',
     planned: 'Plan to Watch',
@@ -38,6 +39,7 @@ const translations = {
   id: {
     home: 'Beranda',
     anime: 'Anime',
+    about: 'Tentang Kami',
     bookmarks: 'Bookmark',
     favorites: 'Favorit',
     planned: 'Rencana Tonton',
@@ -212,6 +214,17 @@ export default function Navbar() {
                     )}
                   </div>
                 )}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+
+              <Link
+                href={`/${lang}/about`}
+                className={`nav-link relative group flex items-center gap-2 ${
+                  pathname === `/${lang}/about` ? 'text-violet-400' : 'text-white'
+                }`}
+              >
+                <Info className="w-4 h-4" />
+                <span>{t.about}</span>
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
             </div>
