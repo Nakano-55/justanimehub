@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
@@ -7,22 +8,7 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { NewThreadForm } from './NewThreadForm';
 import { ThreadCard } from './ThreadCard';
-import { 
-  Loader2, 
-  AlertCircle, 
-  Plus, 
-  Clock, 
-  MessageSquare,
-  TrendingUp,
-  Filter
-} from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Loader2, AlertCircle, Plus } from 'lucide-react';
 import type { Database } from '@/lib/database.types';
 import type { Language } from '@/lib/i18n/types';
 
@@ -32,7 +18,6 @@ interface Thread {
   content: string;
   created_by: string;
   created_at: string;
-  category: string;
   profiles?: {
     username: string | null;
     full_name: string | null;
@@ -54,17 +39,6 @@ const translations = {
     noDiscussions: 'No discussions yet. Start one!',
     startDiscussion: 'Start New Discussion',
     loadMore: 'Load More Discussions',
-    sortBy: 'Sort By',
-    newest: 'Newest',
-    oldest: 'Oldest',
-    mostReplies: 'Most Replies',
-    category: 'Category',
-    allCategories: 'All Categories',
-    plotDiscussion: 'Plot Discussion',
-    characterAnalysis: 'Character Analysis',
-    theories: 'Theories',
-    general: 'General Discussion',
-    review: 'Review Discussion',
   },
   id: {
     loading: 'Memuat diskusi...',
@@ -72,31 +46,10 @@ const translations = {
     noDiscussions: 'Belum ada diskusi. Mulai diskusi!',
     startDiscussion: 'Mulai Diskusi Baru',
     loadMore: 'Muat Lebih Banyak Diskusi',
-    sortBy: 'Urutkan',
-    newest: 'Terbaru',
-    oldest: 'Terlama',
-    mostReplies: 'Paling Banyak Balasan',
-    category: 'Kategori',
-    allCategories: 'Semua Kategori',
-    plotDiscussion: 'Diskusi Plot',
-    characterAnalysis: 'Analisis Karakter',
-    theories: 'Teori',
-    general: 'Diskusi Umum',
-    review: 'Diskusi Ulasan',
   },
 } as const;
 
 const THREADS_PER_PAGE = 5;
-
-const CATEGORIES = [
-  'general',
-  'plot_discussion',
-  'character_analysis',
-  'theories',
-  'review'
-] as const;
-
-type Category = typeof CATEGORIES[number];
 
 export function DiscussionList({ animeId, lang }: DiscussionListProps) {
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -105,8 +58,6 @@ export function DiscussionList({ animeId, lang }: DiscussionListProps) {
   const [showNewThreadForm, setShowNewThreadForm] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'replies'>('newest');
-  const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
   const supabase = createClientComponentClient<Database>();
   const t = translations[lang];
 
@@ -118,7 +69,7 @@ export function DiscussionList({ animeId, lang }: DiscussionListProps) {
       const start = pageNumber * THREADS_PER_PAGE;
       const end = start + THREADS_PER_PAGE - 1;
 
-      let query = supabase
+      const { data: threadsData, error: threadsError } = await supabase
         .from('threads')
         .select(`
           *,
@@ -128,27 +79,9 @@ export function DiscussionList({ animeId, lang }: DiscussionListProps) {
           )
         `)
         .eq('anime_id', animeId)
-        .eq('language', lang);
-
-      if (selectedCategory !== 'all') {
-        query = query.eq('category', selectedCategory);
-      }
-
-      switch (sortBy) {
-        case 'oldest':
-          query = query.order('created_at', { ascending: true });
-          break;
-        case 'replies':
-          // This would require a count of replies, which we'll implement
-          query = query.order('reply_count', { ascending: false });
-          break;
-        default: // newest
-          query = query.order('created_at', { ascending: false });
-      }
-
-      query = query.range(start, end);
-
-      const { data: threadsData, error: threadsError } = await query;
+        .eq('language', lang)
+        .order('created_at', { ascending: false })
+        .range(start, end);
 
       if (threadsError) throw threadsError;
 
@@ -206,23 +139,11 @@ export function DiscussionList({ animeId, lang }: DiscussionListProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [animeId, lang, sortBy, selectedCategory]);
+  }, [animeId, lang, supabase, t.error]);
 
   const loadMore = () => {
     setPage(prev => prev + 1);
     fetchThreads(page + 1);
-  };
-
-  const getCategoryLabel = (category: string): string => {
-    const categoryMap: Record<string, keyof typeof translations[typeof lang]> = {
-      'general': 'general',
-      'plot_discussion': 'plotDiscussion',
-      'character_analysis': 'characterAnalysis',
-      'theories': 'theories',
-      'review': 'review',
-    };
-
-    return t[categoryMap[category] || 'general'];
   };
 
   if (error) {
@@ -236,7 +157,7 @@ export function DiscussionList({ animeId, lang }: DiscussionListProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <Button
           onClick={() => setShowNewThreadForm(true)}
           className="bg-violet-600 hover:bg-violet-500"
@@ -244,50 +165,6 @@ export function DiscussionList({ animeId, lang }: DiscussionListProps) {
           <Plus className="w-4 h-4 mr-2" />
           {t.startDiscussion}
         </Button>
-
-        <div className="flex items-center gap-4">
-          <Select
-            value={selectedCategory}
-            onValueChange={(value) => setSelectedCategory(value as Category | 'all')}
-          >
-            <SelectTrigger className="w-[180px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder={t.category} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t.allCategories}</SelectItem>
-              {CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {getCategoryLabel(category)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={sortBy}
-            onValueChange={(value) => setSortBy(value as 'newest' | 'oldest' | 'replies')}
-          >
-            <SelectTrigger className="w-[180px]">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              <SelectValue placeholder={t.sortBy} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">
-                <Clock className="w-4 h-4 mr-2 inline-block" />
-                {t.newest}
-              </SelectItem>
-              <SelectItem value="oldest">
-                <Clock className="w-4 h-4 mr-2 inline-block" />
-                {t.oldest}
-              </SelectItem>
-              <SelectItem value="replies">
-                <MessageSquare className="w-4 h-4 mr-2 inline-block" />
-                {t.mostReplies}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {showNewThreadForm && (

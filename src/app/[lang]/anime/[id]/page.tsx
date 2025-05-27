@@ -16,7 +16,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { useTranslation } from '@/components/TranslationProvider';
 import { ReviewList } from '@/components/ReviewList';
 import { AnimeRelations } from '@/components/AnimeRelations';
-import { DiscussionThread } from '@/components/DiscussionThread';
+import { DiscussionList } from '@/components/DiscussionList';
 import type { Language } from '@/lib/i18n/types';
 import {
   Star, Clock, Calendar, Play, Users, Trophy, Heart, Info,
@@ -708,7 +708,7 @@ export default function AnimeDetailPage() {
 
               <TabsContent value="discussions" className="mt-4">
                 <div className="bg-neutral-900 rounded-lg p-6">
-                  <DiscussionThread threadId={id} lang={lang} />
+                  <DiscussionList animeId={parseInt(id)} lang={lang} />
                 </div>
               </TabsContent>
             </Tabs>

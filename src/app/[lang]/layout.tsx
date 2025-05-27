@@ -3,6 +3,7 @@ import { LanguageProvider } from '@/components/LanguageProvider';
 import { TranslationProvider } from '@/components/TranslationProvider';
 import { GamificationProvider } from '@/components/GamificationProvider';
 import Navbar from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import { ClientLayout } from '@/components/ClientLayout';
 import type { Language } from '@/lib/i18n/types';
 
@@ -20,8 +21,11 @@ export default async function LangLayout({ children, params }: LangLayoutProps) 
         <TranslationProvider>
           <GamificationProvider>
             <ClientLayout>
-              <Navbar />
-              <main className="pt-16">{children}</main>
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main className="pt-16 flex-1">{children}</main>
+                <Footer />
+              </div>
             </ClientLayout>
           </GamificationProvider>
         </TranslationProvider>

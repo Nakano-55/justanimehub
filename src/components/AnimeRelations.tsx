@@ -1,12 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
-
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, ArrowLeft, GitBranch, ImageOff, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, GitBranch, ImageOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Language } from '@/lib/i18n/types';
 
@@ -33,7 +29,7 @@ interface AnimeRelationsProps {
   lang: Language;
 }
 
-interface TranslationStrings {
+interface TranslationsType {
   relations: string;
   loading: string;
   error: string;
@@ -50,27 +46,20 @@ interface TranslationStrings {
   other: string;
   noImage: string;
   retryButton: string;
-}
-
-interface ImageAltTranslations {
-  cover: (title: string) => string;
-  placeholder: string;
-}
-
-interface TranslationType {
-  [key: string]: {
-    [K in keyof TranslationStrings]: string;
-  } & {
-    imageAlt: ImageAltTranslations;
+  manga: string;
+  anime: string;
+  imageAlt: {
+    cover: (title: string) => string;
+    placeholder: string;
   };
 }
 
-const translations: TranslationType = {
+const translations: Record<Language, TranslationsType> = {
   en: {
-    relations: 'Related Anime',
+    relations: 'Related Media',
     loading: 'Loading relations...',
     error: 'Failed to load relations',
-    noRelations: 'No related anime found',
+    noRelations: 'No related media found',
     sequel: 'Sequel',
     prequel: 'Prequel',
     spinOff: 'Spin-off',
@@ -83,16 +72,18 @@ const translations: TranslationType = {
     other: 'Other',
     noImage: 'No image available',
     retryButton: 'Try Again',
+    manga: 'Manga',
+    anime: 'Anime',
     imageAlt: {
       cover: (title: string) => `Cover image for ${title}`,
-      placeholder: 'Placeholder image for anime without cover'
+      placeholder: 'Placeholder image for media without cover'
     }
   },
   id: {
-    relations: 'Anime Terkait',
+    relations: 'Media Terkait',
     loading: 'Memuat relasi...',
     error: 'Gagal memuat relasi',
-    noRelations: 'Tidak ada anime terkait',
+    noRelations: 'Tidak ada media terkait',
     sequel: 'Sekuel',
     prequel: 'Prekuel',
     spinOff: 'Spin-off',
@@ -105,9 +96,11 @@ const translations: TranslationType = {
     other: 'Lainnya',
     noImage: 'Tidak ada gambar',
     retryButton: 'Coba Lagi',
+    manga: 'Manga',
+    anime: 'Anime',
     imageAlt: {
       cover: (title: string) => `Gambar sampul untuk ${title}`,
-      placeholder: 'Gambar placeholder untuk anime tanpa sampul'
+      placeholder: 'Gambar placeholder untuk media tanpa sampul'
     }
   }
 };
@@ -118,7 +111,6 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<a
       const response = await fetch(url);
       if (!response.ok) {
         if (response.status === 429) {
-          // If rate limited, wait longer
           await new Promise(resolve => setTimeout(resolve, delay * 2));
           continue;
         }
@@ -133,27 +125,6 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<a
   }
 }
 
-const LoadingSkeleton = () => (
-  <div className="space-y-8 animate-pulse">
-    {[...Array(2)].map((_, groupIndex) => (
-      <div key={groupIndex} className="space-y-4">
-        <div className="h-6 bg-neutral-800 rounded w-48" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, cardIndex) => (
-            <div key={cardIndex} className="bg-neutral-800 rounded-lg overflow-hidden">
-              <div className="aspect-[3/4] bg-neutral-700" />
-              <div className="p-4 space-y-3">
-                <div className="h-4 bg-neutral-700 rounded w-3/4" />
-                <div className="h-3 bg-neutral-700 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
 export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
   const [relations, setRelations] = useState<AnimeRelation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -166,31 +137,39 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
       setError(null);
 
       const data = await fetchWithRetry(`https://api.jikan.moe/v4/anime/${animeId}/relations`);
-      
-      // Filter out entries without valid data
-      const validRelations = data.data.filter((relation: AnimeRelation) => 
+
+      const validRelations = data.data.filter((relation: AnimeRelation) =>
         relation.entry && Array.isArray(relation.entry) && relation.entry.length > 0
       );
-      
-      // For each entry, fetch full anime details to get images
+
       const enrichedRelations = await Promise.all(validRelations.map(async (relation: AnimeRelation) => {
         const enrichedEntries = await Promise.all(relation.entry.map(async (entry: AnimeEntry) => {
-          if (entry.type?.toLowerCase() === 'manga') {
-            // For manga entries, use a placeholder or skip fetching details
-            return entry;
+          if (entry.type?.toLowerCase() === 'anime') {
+            try {
+              const animeData = await fetchWithRetry(`https://api.jikan.moe/v4/anime/${entry.mal_id}/full`);
+              return {
+                ...entry,
+                images: animeData.data.images,
+                title: animeData.data.title
+              };
+            } catch (error) {
+              console.error(`Error fetching details for anime ${entry.mal_id}:`, error);
+              return entry;
+            }
+          } else if (entry.type?.toLowerCase() === 'manga') {
+            try {
+              const mangaData = await fetchWithRetry(`https://api.jikan.moe/v4/manga/${entry.mal_id}/full`);
+              return {
+                ...entry,
+                images: mangaData.data.images,
+                title: mangaData.data.title
+              };
+            } catch (error) {
+              console.error(`Error fetching details for manga ${entry.mal_id}:`, error);
+              return entry;
+            }
           }
-
-          try {
-            const animeData = await fetchWithRetry(`https://api.jikan.moe/v4/anime/${entry.mal_id}/full`);
-            return {
-              ...entry,
-              images: animeData.data.images,
-              title: animeData.data.title
-            };
-          } catch (error) {
-            console.error(`Error fetching details for anime ${entry.mal_id}:`, error);
-            return entry;
-          }
+          return entry;
         }));
 
         return {
@@ -200,8 +179,8 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
       }));
 
       setRelations(enrichedRelations || []);
-    } catch (err) {
-      console.error('Error fetching relations:', err);
+    } catch (error) {
+      console.error('Error fetching relations:', error);
       setError(t.error);
     } finally {
       setIsLoading(false);
@@ -224,21 +203,21 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
   };
 
   const getRelationLabel = (relation: string): string => {
-    const relationMap: Record<string, keyof TranslationStrings> = {
-      'Sequel': 'sequel',
-      'Prequel': 'prequel',
-      'Spin-off': 'spinOff',
-      'Adaptation': 'adaptation',
-      'Alternative version': 'alternativeVersion',
-      'Alternative setting': 'alternativeSetting',
-      'Side story': 'sideStory',
-      'Summary': 'summary',
-      'Character': 'character',
-      'Other': 'other',
+    const relationMap: Record<string, keyof TranslationsType> = {
+      'sequel': 'sequel',
+      'prequel': 'prequel',
+      'spin-off': 'spinOff',
+      'adaptation': 'adaptation',
+      'alternative version': 'alternativeVersion',
+      'alternative setting': 'alternativeSetting',
+      'side story': 'sideStory',
+      'summary': 'summary',
+      'character': 'character',
+      'other': 'other',
     };
 
-    const key = relationMap[relation] || 'other';
-    return t[key];
+    const key = relationMap[relation.toLowerCase().trim()] || 'other';
+    return t[key] as string;
   };
 
   if (isLoading) {
@@ -292,14 +271,9 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {relation.entry.map((entry) => (
-              <Link
+              <div
                 key={entry.mal_id}
-                href={entry.type?.toLowerCase() === 'manga' ? '#' : `/${lang}/anime/${entry.mal_id}`}
-                className={`bg-neutral-800 rounded-lg overflow-hidden transition-all group ${
-                  entry.type?.toLowerCase() !== 'manga' ? 'hover:ring-2 hover:ring-violet-500/50' : 'cursor-not-allowed opacity-50'
-                }`}
-                aria-disabled={entry.type?.toLowerCase() === 'manga'}
-                tabIndex={entry.type?.toLowerCase() === 'manga' ? -1 : undefined}
+                className="bg-neutral-800 rounded-lg overflow-hidden transition-all group hover:ring-2 hover:ring-violet-500/50"
               >
                 <div className="relative aspect-[3/4]">
                   {entry.images?.jpg?.large_image_url ? (
@@ -311,8 +285,8 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
                       sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     />
                   ) : (
-                    <div 
-                      className="absolute inset-0 bg-neutral-800 flex items-center justify-center" 
+                    <div
+                      className="absolute inset-0 bg-neutral-800 flex items-center justify-center"
                       aria-label={t.imageAlt.placeholder}
                     >
                       <ImageOff className="w-8 h-8 text-neutral-600" aria-hidden="true" />
@@ -325,11 +299,11 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
                   </h3>
                   {entry.type && (
                     <span className="text-sm text-neutral-400 mt-1 block">
-                      {entry.type}
+                      {entry.type.toLowerCase() === 'manga' ? t.manga : t.anime}
                     </span>
                   )}
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </motion.div>
@@ -337,3 +311,24 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
     </div>
   );
 }
+
+const LoadingSkeleton = () => (
+  <div className="space-y-8 animate-pulse">
+    {[...Array(2)].map((_, groupIndex) => (
+      <div key={groupIndex} className="space-y-4">
+        <div className="h-6 bg-neutral-800 rounded w-48" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, cardIndex) => (
+            <div key={cardIndex} className="bg-neutral-800 rounded-lg overflow-hidden">
+              <div className="aspect-[3/4] bg-neutral-700" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 bg-neutral-700 rounded w-3/4" />
+                <div className="h-3 bg-neutral-700 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
