@@ -1,29 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
-
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TranslationContributor } from '@/components/TranslationContributor';
-import { BookmarkButtons } from '@/components/BookmarkButtons';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useTranslation } from '@/components/TranslationProvider';
-import { ReviewList } from '@/components/ReviewList';
+import { TranslationContributor } from '@/components/TranslationContributor';
+import { BookmarkButtons } from '@/components/BookmarkButtons';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { AnimeRelations } from '@/components/AnimeRelations';
 import { DiscussionList } from '@/components/DiscussionList';
-import type { Language } from '@/lib/i18n/types';
+import { ReviewList } from '@/components/ReviewList';
 import {
   Star, Clock, Calendar, Play, Users, Trophy, Heart, Info,
   Globe, Video, Tv, CalendarDays, CircleUserRound, Building2,
   ChevronLeft, ChevronRight, ArrowLeft, User, GitBranch,
-  MessageSquare
+  MessageSquare, FileText, PlaySquare, BookOpen
 } from 'lucide-react';
+import { Language } from '@/lib/i18n/types';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PageTranslations {
   back: string;
@@ -553,8 +552,16 @@ export default function AnimeDetailPage() {
 
             <Tabs defaultValue="synopsis" className="w-full">
               <TabsList className="bg-neutral-900">
-                <TabsTrigger value="synopsis">{t.synopsis}</TabsTrigger>
-                {anime.background && <TabsTrigger value="background">{t.background}</TabsTrigger>}
+                <TabsTrigger value="synopsis" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  {t.synopsis}
+                </TabsTrigger>
+                {anime.background && (
+                  <TabsTrigger value="background" className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    {t.background}
+                  </TabsTrigger>
+                )}
                 {characters.length > 0 && (
                   <TabsTrigger value="characters" className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -565,7 +572,12 @@ export default function AnimeDetailPage() {
                   <GitBranch className="w-4 h-4" />
                   Relations
                 </TabsTrigger>
-                {anime.trailer?.youtube_id && <TabsTrigger value="trailer">{t.trailer}</TabsTrigger>}
+                {anime.trailer?.youtube_id && (
+                  <TabsTrigger value="trailer" className="flex items-center gap-2">
+                    <PlaySquare className="w-4 h-4" />
+                    {t.trailer}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="reviews" className="flex items-center gap-2">
                   <Star className="w-4 h-4" />
                   {t.reviews}

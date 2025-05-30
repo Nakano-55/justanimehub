@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useLanguage } from '@/components/LanguageProvider';
-import { Heart, Github, Twitter } from 'lucide-react';
+import { Github, Twitter } from 'lucide-react';
 
 const translations = {
   en: {
@@ -13,12 +13,12 @@ const translations = {
     legal: 'Legal',
     terms: 'Terms of Service',
     privacy: 'Privacy Policy',
-    copyright: '© 2025 JustAnimeHub. All rights reserved.',
+    copyright: '© 2024 JustAnimeHub. All rights reserved.',
     poweredBy: 'Powered by',
     jikanApi: 'Jikan API',
     followUs: 'Follow Us',
-    madeWith: 'Made with',
-    by: 'by anime enthusiasts',
+    madeWith: 'For the love of anime,',
+    by: 'we build this world',
   },
   id: {
     about: 'Tentang',
@@ -28,12 +28,12 @@ const translations = {
     legal: 'Legal',
     terms: 'Ketentuan Layanan',
     privacy: 'Kebijakan Privasi',
-    copyright: '© 2025 JustAnimeHub. Hak cipta dilindungi.',
+    copyright: '© 2024 JustAnimeHub. Hak cipta dilindungi.',
     poweredBy: 'Didukung oleh',
     jikanApi: 'Jikan API',
     followUs: 'Ikuti Kami',
-    madeWith: 'Dibuat dengan',
-    by: 'oleh penggemar anime',
+    madeWith: 'For the love of anime,',
+    by: 'we build this world',
   },
 } as const;
 
@@ -42,7 +42,7 @@ export function Footer() {
   const t = translations[lang];
 
   return (
-    <footer className="bg-neutral-900/50 backdrop-blur-sm border-t border-neutral-800 mt-auto">
+    <footer className="w-full bg-neutral-900/50 backdrop-blur-sm border-t border-neutral-800 mt-16">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
@@ -147,9 +147,8 @@ export function Footer() {
                 {t.jikanApi}
               </a>
             </div>
-            <div className="flex items-center gap-2 mt-4 text-neutral-400">
+            <div className="flex flex-col mt-4 text-neutral-400">
               <span>{t.madeWith}</span>
-              <Heart className="w-4 h-4 text-red-500" />
               <span>{t.by}</span>
             </div>
           </div>
