@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -12,13 +13,16 @@ import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/components/LanguageProvider';
 import { ContributionHistory } from '@/components/ContributionHistory';
 import { UserPoints } from '@/components/UserPoints';
+import { ProfilePhotoUpload } from '@/components/ProfilePhotoUpload';
+import { BannerPhotoUpload } from '@/components/BannerPhotoUpload';
 import { motion } from 'framer-motion';
 import {
   User, Settings, Star, BookmarkCheck, Heart, Loader2, PenLine,
   Calendar, AlertCircle, Save, X, ChevronRight, Trophy, ImageOff,
-  CheckCircle, AlertTriangle
+  CheckCircle, AlertTriangle, Camera
 } from 'lucide-react';
 import type { Database } from '@/lib/database.types';
+import type { Language } from '@/lib/i18n/types';
 
 const translations = {
   en: {
@@ -177,6 +181,8 @@ export default function ProfilePage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [showBannerUpload, setShowBannerUpload] = useState(false);
   const { toast } = useToast();
   const supabase = createClientComponentClient<Database>();
 
@@ -350,6 +356,60 @@ export default function ProfilePage() {
     }
   };
 
+  const handlePhotoUploadSuccess = async (url: string) => {
+    try {
+      // Update profile in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: url })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setProfile((prev: any) => ({ ...prev, avatar_url: url }));
+      setShowPhotoUpload(false);
+
+      toast({
+        description: 'Profile photo updated successfully',
+      });
+    } catch (error) {
+      console.error('Error updating profile photo:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile photo',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBannerUploadSuccess = async (url: string) => {
+    try {
+      // Update profile in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ banner_url: url })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setProfile((prev: any) => ({ ...prev, banner_url: url }));
+      setShowBannerUpload(false);
+
+      toast({
+        description: 'Banner photo updated successfully',
+      });
+    } catch (error) {
+      console.error('Error updating banner photo:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update banner photo',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', {
       year: 'numeric',
@@ -408,15 +468,52 @@ export default function ProfilePage() {
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
           <div className="relative mb-8">
-            <div className="h-48 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg" />
+            {/* Banner Section */}
+            <div className="relative h-48 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg overflow-hidden group">
+              {profile.banner_url && (
+                <div className="absolute inset-0">
+                  <Image
+                    src={profile.banner_url}
+                    alt="Profile Banner"
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      // Handle image load error
+                      e.currentTarget.src = `https://api.dicebear.com/7.x/shapes/svg?seed=${profile.id}-banner`;
+                    }}
+                  />
+                </div>
+              )}
+              <button
+                onClick={() => setShowBannerUpload(true)}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Camera className="w-6 h-6 mr-2" />
+                Change Banner
+              </button>
+            </div>
+
+            {/* Profile Photo Section */}
             <div className="absolute -bottom-16 left-8 flex items-end">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-neutral-950">
-                <Image
-                  src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.username || profile.email}`}
-                  alt="Profile"
-                  fill
-                  className="object-cover"
-                />
+              <div className="relative">
+                <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-neutral-950 bg-neutral-800">
+                  <Image
+                    src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.username || profile.email}`}
+                    alt="Profile"
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      // Handle image load error
+                      e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${profile.username || profile.email}`;
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => setShowPhotoUpload(true)}
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-full"
+                >
+                  <Camera className="w-6 h-6" />
+                </button>
               </div>
               <div className="ml-6 mb-4">
                 <h1 className="text-3xl font-bold">
@@ -426,6 +523,49 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* Photo Upload Dialogs */}
+          {showPhotoUpload && profile && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-neutral-900 rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-xl font-semibold mb-4">Update Profile Photo</h3>
+                <ProfilePhotoUpload
+                  userId={profile.id}
+                  currentPhotoUrl={profile.avatar_url}
+                  onSuccess={handlePhotoUploadSuccess}
+                  lang={lang}
+                />
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowPhotoUpload(false)}
+                  className="mt-4"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {showBannerUpload && profile && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-neutral-900 rounded-lg p-6 max-w-2xl w-full">
+                <h3 className="text-xl font-semibold mb-4">Update Banner Photo</h3>
+                <BannerPhotoUpload
+                  userId={profile.id}
+                  currentBannerUrl={profile.banner_url}
+                  onSuccess={handleBannerUploadSuccess}
+                  lang={lang}
+                />
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowBannerUpload(false)}
+                  className="mt-4"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-20">
             <Tabs defaultValue="overview" className="w-full">

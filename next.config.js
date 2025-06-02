@@ -4,7 +4,7 @@ const nextConfig = {
       ignoreDuringBuilds: true,
     },
     images: { 
-      domains: ['img.youtube.com', 'cdn.myanimelist.net','images.unsplash.com'],
+      domains: ['img.youtube.com', 'cdn.myanimelist.net','images.unsplash.com','api.dicebear.com'],
       unoptimized: true 
     }
   };
