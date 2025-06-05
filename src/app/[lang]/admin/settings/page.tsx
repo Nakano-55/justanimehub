@@ -44,6 +44,7 @@ const translations = {
     removeError: 'Failed to remove admin user',
     removeConfirm: 'Are you sure you want to remove this admin?',
     createdAt: 'Added on',
+    userNotFound: 'User not found',
   },
   id: {
     settings: 'Pengaturan Admin',
@@ -61,6 +62,7 @@ const translations = {
     removeError: 'Gagal menghapus pengguna admin',
     removeConfirm: 'Apakah Anda yakin ingin menghapus admin ini?',
     createdAt: 'Ditambahkan pada',
+    userNotFound: 'Pengguna tidak ditemukan',
   },
 } as const;
 
@@ -141,21 +143,23 @@ export default function AdminSettingsPage() {
     try {
       setIsAdding(true);
 
-      // First check if the user exists in auth
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
-      if (userError) throw userError;
+      // First check if the user exists in profiles
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', newAdminEmail.trim())
+        .single();
 
-      const user = users.find(u => u.email === newAdminEmail.trim());
-      if (!user) {
-        throw new Error('User not found');
+      if (profileError || !profile) {
+        throw new Error(t.userNotFound);
       }
 
       // Add user to admin_users table
       const { error: insertError } = await supabase
         .from('admin_users')
         .insert({
-          id: user.id,
-          email: user.email,
+          id: profile.id,
+          email: newAdminEmail.trim(),
         });
 
       if (insertError) throw insertError;
@@ -168,7 +172,7 @@ export default function AdminSettingsPage() {
       console.error('Error adding admin:', error);
       toast({
         title: 'Error',
-        description: t.addError,
+        description: error instanceof Error ? error.message : t.addError,
         variant: 'destructive',
       });
     } finally {

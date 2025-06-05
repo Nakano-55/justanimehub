@@ -10,6 +10,7 @@ import { AuthButton } from '@/components/AuthButton';
 import { UserMenu } from '@/components/UserMenu';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NotificationBell } from '@/components/NotificationBell';
+import { MobileMenu } from '@/components/MobileMenu';
 import { motion } from 'framer-motion';
 import { Heart, BookmarkCheck, ChevronDown, Info } from 'lucide-react';
 import {
@@ -133,16 +134,16 @@ export default function Navbar() {
             </Link>
           </motion.div>
 
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
+            {/* Desktop Navigation */}
             <div className="hidden md:flex space-x-8 text-lg">
               <Link
                 href={`/${lang}`}
-                className={`nav-link relative group ${
+                className={`nav-link ${
                   pathname === `/${lang}` ? 'text-violet-400' : 'text-white'
                 }`}
               >
-                <span>{t.home}</span>
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+                {t.home}
               </Link>
 
               <DropdownMenu>
@@ -193,7 +194,7 @@ export default function Navbar() {
 
               <Link
                 href={`/${lang}/bookmark`}
-                className={`nav-link relative group flex items-center gap-2 ${
+                className={`nav-link flex items-center gap-2 ${
                   pathname === `/${lang}/bookmark` ? 'text-violet-400' : 'text-white'
                 }`}
               >
@@ -214,22 +215,21 @@ export default function Navbar() {
                     )}
                   </div>
                 )}
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
 
               <Link
                 href={`/${lang}/about`}
-                className={`nav-link relative group flex items-center gap-2 ${
+                className={`nav-link flex items-center gap-2 ${
                   pathname === `/${lang}/about` ? 'text-violet-400' : 'text-white'
                 }`}
               >
                 <Info className="w-4 h-4" />
                 <span>{t.about}</span>
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
             </div>
             
-            <div className="flex items-center gap-4">
+            {/* Common Actions */}
+            <div className="flex items-center gap-2 md:gap-4">
               <LanguageSwitcher currentLang={lang} />
               {user ? (
                 <div className="flex items-center gap-2">
@@ -239,6 +239,7 @@ export default function Navbar() {
               ) : (
                 <AuthButton />
               )}
+              <MobileMenu lang={lang} bookmarkCounts={bookmarkCounts} />
             </div>
           </div>
         </div>

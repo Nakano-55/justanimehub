@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -551,38 +552,59 @@ export default function AnimeDetailPage() {
             </div>
 
             <Tabs defaultValue="synopsis" className="w-full">
-              <TabsList className="bg-neutral-900">
-                <TabsTrigger value="synopsis" className="flex items-center gap-2">
+              <TabsList className="bg-neutral-900 p-1">
+                <TabsTrigger 
+                  value="synopsis" 
+                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                >
                   <FileText className="w-4 h-4" />
                   {t.synopsis}
                 </TabsTrigger>
                 {anime.background && (
-                  <TabsTrigger value="background" className="flex items-center gap-2">
+                  <TabsTrigger 
+                    value="background"
+                    className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                  >
                     <BookOpen className="w-4 h-4" />
                     {t.background}
                   </TabsTrigger>
                 )}
                 {characters.length > 0 && (
-                  <TabsTrigger value="characters" className="flex items-center gap-2">
+                  <TabsTrigger 
+                    value="characters"
+                    className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                  >
                     <User className="w-4 h-4" />
                     {t.characters}
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="relations" className="flex items-center gap-2">
+                <TabsTrigger 
+                  value="relations"
+                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                >
                   <GitBranch className="w-4 h-4" />
                   Relations
                 </TabsTrigger>
                 {anime.trailer?.youtube_id && (
-                  <TabsTrigger value="trailer" className="flex items-center gap-2">
+                  <TabsTrigger 
+                    value="trailer"
+                    className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                  >
                     <PlaySquare className="w-4 h-4" />
                     {t.trailer}
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="reviews" className="flex items-center gap-2">
+                <TabsTrigger 
+                  value="reviews"
+                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                >
                   <Star className="w-4 h-4" />
                   {t.reviews}
                 </TabsTrigger>
-                <TabsTrigger value="discussions" className="flex items-center gap-2">
+                <TabsTrigger 
+                  value="discussions"
+                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                >
                   <MessageSquare className="w-4 h-4" />
                   {t.discussions}
                 </TabsTrigger>

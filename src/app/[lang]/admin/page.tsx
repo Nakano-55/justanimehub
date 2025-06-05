@@ -336,10 +336,12 @@ export default function AdminDashboard() {
                 {t.manageContent}
               </Button>
             </Link>
-            <Button variant="outline">
-              <Settings className="w-4 h-4 mr-2" />
-              {t.adminSettings}
-            </Button>
+            <Link href={`/${lang}/admin/settings`}>
+              <Button variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
+                {t.adminSettings}
+              </Button>
+            </Link>
           </div>
         </div>
 

@@ -17,20 +17,18 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if user is admin
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
+  const { data: adminUser } = await supabase
+    .from('admin_users')
+    .select('id')
     .eq('id', session.user.id)
     .single();
 
-  if (!profile || profile.role !== 'admin') {
+  if (!adminUser) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
   return res;
 }
-
-
 
 export const config = {
   matcher: ['/admin/:path*']
