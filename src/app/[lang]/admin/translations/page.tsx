@@ -7,25 +7,17 @@ import Link from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
-import { Check, X, Loader2, AlertCircle, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
-import { POINTS } from '@/lib/gamification/points';
+import { Check, X, Loader2, AlertCircle, ChevronDown, ChevronUp, ExternalLink, Calendar, User, FileText, Globe, Eye } from 'lucide-react';
 import type { Database } from '@/lib/database.types';
-import type { Language as LanguageType } from '@/lib/i18n/types';
 
 type ContentVersion = Database['public']['Tables']['content_versions']['Row'];
 type ContentStatus = 'pending' | 'approved' | 'rejected' | 'all';
@@ -42,6 +34,85 @@ interface ContentVersionWithProfile extends ContentVersion {
   expanded?: boolean;
 }
 
+const translations = {
+  en: {
+    contentManagement: 'Content Management',
+    filterBy: 'Filter by',
+    entityType: 'Entity Type',
+    contentType: 'Content Type',
+    language: 'Language',
+    status: 'Status',
+    characters: 'Characters',
+    anime: 'Anime',
+    characterDescriptions: 'Character Descriptions',
+    animeSynopsis: 'Anime Synopsis',
+    animeBackground: 'Anime Background',
+    english: 'English',
+    indonesian: 'Indonesian',
+    allContent: 'All Content',
+    pendingReview: 'Pending Review',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    loading: 'Loading content...',
+    error: 'Error loading content',
+    retry: 'Retry',
+    noContent: 'No content found for the selected criteria',
+    contributor: 'Contributor',
+    createdAt: 'Created',
+    viewEntity: 'View',
+    approve: 'Approve',
+    reject: 'Reject',
+    originalContent: 'Original Content',
+    newContent: 'New Content',
+    seeMore: 'See More',
+    seeLess: 'See Less',
+    anonymous: 'Anonymous',
+    contentApproved: 'Content approved successfully',
+    contentRejected: 'Content rejected successfully',
+    errorUpdating: 'Failed to update content status',
+    pending: 'Pending',
+    itemsFound: 'items found'
+  },
+  id: {
+    contentManagement: 'Manajemen Konten',
+    filterBy: 'Filter berdasarkan',
+    entityType: 'Tipe Entitas',
+    contentType: 'Tipe Konten',
+    language: 'Bahasa',
+    status: 'Status',
+    characters: 'Karakter',
+    anime: 'Anime',
+    characterDescriptions: 'Deskripsi Karakter',
+    animeSynopsis: 'Sinopsis Anime',
+    animeBackground: 'Latar Belakang Anime',
+    english: 'Inggris',
+    indonesian: 'Indonesia',
+    allContent: 'Semua Konten',
+    pendingReview: 'Menunggu Review',
+    approved: 'Disetujui',
+    rejected: 'Ditolak',
+    loading: 'Memuat konten...',
+    error: 'Gagal memuat konten',
+    retry: 'Coba Lagi',
+    noContent: 'Tidak ada konten yang ditemukan untuk kriteria yang dipilih',
+    contributor: 'Kontributor',
+    createdAt: 'Dibuat',
+    viewEntity: 'Lihat',
+    approve: 'Setujui',
+    reject: 'Tolak',
+    originalContent: 'Konten Asli',
+    newContent: 'Konten Baru',
+    seeMore: 'Lihat Lebih',
+    seeLess: 'Lihat Kurang',
+    anonymous: 'Anonim',
+    contentApproved: 'Konten berhasil disetujui',
+    contentRejected: 'Konten berhasil ditolak',
+    errorUpdating: 'Gagal memperbarui status konten',
+    pending: 'Menunggu',
+    itemsFound: 'item ditemukan'
+  }
+} as const;
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString();
 }
@@ -57,6 +128,7 @@ export default function AdminContentPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const supabase = createClientComponentClient<Database>();
+  const t = translations['en']; // You can make this dynamic based on user preference
 
   useEffect(() => {
     fetchContent();
@@ -141,7 +213,6 @@ export default function AdminContentPage() {
     try {
       setIsUpdating(prev => ({ ...prev, [id]: true }));
 
-      // Get current version details
       const { data: currentVersion, error: checkError } = await supabase
         .from('content_versions')
         .select('*')
@@ -151,7 +222,6 @@ export default function AdminContentPage() {
       if (checkError) throw new Error('Failed to verify content status');
       if (!currentVersion) throw new Error('Content not found');
 
-      // Update version status
       const updateData = {
         status: newStatus,
         updated_at: new Date().toISOString(),
@@ -165,44 +235,8 @@ export default function AdminContentPage() {
 
       if (updateError) throw updateError;
 
-      // Award points if approved
-      if (newStatus === 'approved') {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: userPoints } = await supabase
-            .from('user_points')
-            .select('points')
-            .eq('user_id', currentVersion.created_by)
-            .single();
-
-          // Update user points
-          await supabase
-            .from('user_points')
-            .upsert({
-              user_id: currentVersion.created_by,
-              points: (userPoints?.points || 0) + POINTS.CONTENT_APPROVED,
-              updated_at: new Date().toISOString(),
-            });
-        }
-      }
-
-      // Create notification for the content creator
-      await supabase.from('notifications').insert({
-        user_id: currentVersion.created_by,
-        type: `content_${newStatus}`,
-        message: `Your ${currentVersion.content_type.replace(/_/g, ' ')} translation for ${currentVersion.entity_type} has been ${newStatus}`,
-        link: `/${currentVersion.language}/${currentVersion.entity_type}/${currentVersion.entity_id}`,
-        data: {
-          versionId: id,
-          entityId: currentVersion.entity_id,
-          entityType: currentVersion.entity_type,
-          contentType: currentVersion.content_type,
-          language: currentVersion.language
-        }
-      });
-
       toast({
-        description: `Content ${newStatus} successfully`,
+        description: newStatus === 'approved' ? t.contentApproved : t.contentRejected,
       });
 
       await fetchContent();
@@ -210,7 +244,7 @@ export default function AdminContentPage() {
       console.error('Error updating status:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update status',
+        description: error instanceof Error ? error.message : t.errorUpdating,
         variant: 'destructive',
       });
     } finally {
@@ -230,12 +264,163 @@ export default function AdminContentPage() {
     return `/${language}/${entityType}/${entityId}`;
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'rejected':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      default:
+        return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
+    }
+  };
+
+  const ContentCard = ({ item }: { item: ContentVersionWithProfile }) => (
+    <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-colors">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg flex items-center gap-2 mb-2">
+              <FileText className="w-5 h-5 text-violet-500 flex-shrink-0" />
+              <span className="truncate">
+                {item.content_type.replace(/_/g, ' ')}
+              </span>
+            </CardTitle>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-400">
+              <Badge variant="outline" className="text-xs">
+                <Globe className="w-3 h-3 mr-1" />
+                {item.language.toUpperCase()}
+              </Badge>
+              <Badge variant="outline" className={`text-xs border ${getStatusColor(item.status)}`}>
+                {item.status}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {item.entity_type}
+              </Badge>
+            </div>
+          </div>
+          <Link
+            href={getEntityUrl(item.entity_type, item.entity_id, item.language)}
+            target="_blank"
+            className="flex-shrink-0"
+          >
+            <Button variant="outline" size="sm" className="text-xs">
+              <Eye className="w-3 h-3 mr-1" />
+              {t.viewEntity}
+            </Button>
+          </Link>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {/* Contributor and Date */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm text-neutral-400">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{item.profiles?.username || item.profiles?.email || t.anonymous}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">{formatDate(item.created_at)}</span>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-4">
+          {item.originalContent && (
+            <div className="bg-neutral-800 p-3 rounded-lg">
+              <div className="text-sm text-neutral-400 mb-2 font-medium">{t.originalContent}:</div>
+              <div className="text-neutral-200 text-sm leading-relaxed">
+                {item.expanded
+                  ? item.originalContent
+                  : `${item.originalContent.slice(0, 150)}${
+                      item.originalContent.length > 150 ? '...' : ''
+                    }`}
+              </div>
+            </div>
+          )}
+          
+          <div className="bg-neutral-800/50 p-3 rounded-lg border border-violet-500/20">
+            <div className="text-sm text-violet-400 mb-2 font-medium">{t.newContent}:</div>
+            <div className="text-neutral-200 text-sm leading-relaxed">
+              {item.expanded
+                ? item.content
+                : `${item.content.slice(0, 150)}${
+                    item.content.length > 150 ? '...' : ''
+                  }`}
+            </div>
+          </div>
+
+          {(item.content.length > 150 || (item.originalContent && item.originalContent.length > 150)) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleExpand(item.id)}
+              className="text-neutral-400 hover:text-white w-full"
+            >
+              {item.expanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4 mr-1" />
+                  {t.seeLess}
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4 mr-1" />
+                  {t.seeMore}
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* Actions */}
+        {item.status === 'pending' && (
+          <div className="flex gap-2 pt-2 border-t border-neutral-800">
+            <Button
+              size="sm"
+              className="flex-1 bg-green-600 hover:bg-green-500"
+              onClick={() => handleStatusUpdate(item.id, 'approved')}
+              disabled={isUpdating[item.id]}
+            >
+              {isUpdating[item.id] ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  {t.approve}
+                </>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="flex-1"
+              onClick={() => handleStatusUpdate(item.id, 'rejected')}
+              disabled={isUpdating[item.id]}
+            >
+              {isUpdating[item.id] ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <X className="w-4 h-4 mr-1" />
+                  {t.reject}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-white flex justify-center items-center">
         <div className="flex items-center gap-2">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-          <span>Loading content...</span>
+          <Loader2 className="w-8 h-8 animate-spin text-violet-500" aria-hidden="true" />
+          <span>{t.loading}</span>
         </div>
       </div>
     );
@@ -251,7 +436,7 @@ export default function AdminContentPage() {
             onClick={() => window.location.reload()}
             className="bg-violet-600 hover:bg-violet-500"
           >
-            Retry
+            {t.retry}
           </Button>
         </div>
       </div>
@@ -260,207 +445,108 @@ export default function AdminContentPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white pt-20">
-      <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Content Management</h1>
-          <div className="flex gap-4">
-            <Select
-              value={selectedEntityType}
-              onValueChange={(value) => setSelectedEntityType(value as EntityType)}
-            >
-              <SelectTrigger className="w-[200px] bg-neutral-900 border-neutral-700">
-                <SelectValue placeholder="Select entity type" />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-900 border-neutral-700">
-                <SelectItem value="character">Characters</SelectItem>
-                <SelectItem value="anime">Anime</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">{t.contentManagement}</h1>
+          {content.length > 0 && (
+            <div className="text-sm text-neutral-400">
+              {content.length} {t.itemsFound}
+            </div>
+          )}
+        </div>
 
-            <Select
-              value={selectedType}
-              onValueChange={(value) => setSelectedType(value as ContentType)}
-            >
-              <SelectTrigger className="w-[200px] bg-neutral-900 border-neutral-700">
-                <SelectValue placeholder="Select content type" />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-900 border-neutral-700">
-                <SelectItem value="character_description">Character Descriptions</SelectItem>
-                <SelectItem value="anime_synopsis">Anime Synopsis</SelectItem>
-                <SelectItem value="anime_background">Anime Background</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Filters */}
+        <Card className="bg-neutral-900 border-neutral-800 mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">{t.filterBy}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.entityType}</label>
+                <Select
+                  value={selectedEntityType}
+                  onValueChange={(value) => setSelectedEntityType(value as EntityType)}
+                >
+                  <SelectTrigger className="bg-neutral-800 border-neutral-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-neutral-900 border-neutral-700">
+                    <SelectItem value="character">{t.characters}</SelectItem>
+                    <SelectItem value="anime">{t.anime}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <Select
-              value={selectedLanguage}
-              onValueChange={(value) => setSelectedLanguage(value as Language)}
-            >
-              <SelectTrigger className="w-[180px] bg-neutral-900 border-neutral-700">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-900 border-neutral-700">
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="id">Indonesian</SelectItem>
-              </SelectContent>
-            </Select>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.contentType}</label>
+                <Select
+                  value={selectedType}
+                  onValueChange={(value) => setSelectedType(value as ContentType)}
+                >
+                  <SelectTrigger className="bg-neutral-800 border-neutral-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-neutral-900 border-neutral-700">
+                    <SelectItem value="character_description">{t.characterDescriptions}</SelectItem>
+                    <SelectItem value="anime_synopsis">{t.animeSynopsis}</SelectItem>
+                    <SelectItem value="anime_background">{t.animeBackground}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <Select
-              value={selectedStatus}
-              onValueChange={(value) => setSelectedStatus(value as ContentStatus)}
-            >
-              <SelectTrigger className="w-[180px] bg-neutral-900 border-neutral-700">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-900 border-neutral-700">
-                <SelectItem value="all">All Content</SelectItem>
-                <SelectItem value="pending">Pending Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.language}</label>
+                <Select
+                  value={selectedLanguage}
+                  onValueChange={(value) => setSelectedLanguage(value as Language)}
+                >
+                  <SelectTrigger className="bg-neutral-800 border-neutral-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-neutral-900 border-neutral-700">
+                    <SelectItem value="en">{t.english}</SelectItem>
+                    <SelectItem value="id">{t.indonesian}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.status}</label>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={(value) => setSelectedStatus(value as ContentStatus)}
+                >
+                  <SelectTrigger className="bg-neutral-800 border-neutral-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-neutral-900 border-neutral-700">
+                    <SelectItem value="all">{t.allContent}</SelectItem>
+                    <SelectItem value="pending">{t.pendingReview}</SelectItem>
+                    <SelectItem value="approved">{t.approved}</SelectItem>
+                    <SelectItem value="rejected">{t.rejected}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Content Display - Consistent card layout across all screen sizes */}
+        {content.length === 0 ? (
+          <Card className="bg-neutral-900 border-neutral-800">
+            <CardContent className="text-center py-12">
+              <FileText className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
+              <p className="text-neutral-400">{t.noContent}</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:gap-6">
+            {content.map((item) => (
+              <ContentCard key={item.id} item={item} />
+            ))}
           </div>
-        </div>
-
-        <div className="bg-neutral-900 rounded-lg p-6 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-neutral-800">
-                <TableHead className="text-neutral-400 w-32">Content Type</TableHead>
-                <TableHead className="text-neutral-400 w-24">Language</TableHead>
-                <TableHead className="text-neutral-400">Content</TableHead>
-                <TableHead className="text-neutral-400 w-40">Contributor</TableHead>
-                <TableHead className="text-neutral-400 w-32">Status</TableHead>
-                <TableHead className="text-neutral-400 w-40">Created At</TableHead>
-                <TableHead className="text-neutral-400 w-24">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {content.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-neutral-400 py-8">
-                    No content found for the selected criteria
-                  </TableCell>
-                </TableRow>
-              ) : (
-                content.map((item) => (
-                  <TableRow key={item.id} className="border-neutral-800">
-                    <TableCell className="font-medium text-white">
-                      <div className="flex flex-col gap-1">
-                        <span>{item.content_type.replace(/_/g, ' ')}</span>
-                        <Link
-                          href={getEntityUrl(item.entity_type, item.entity_id, item.language)}
-                          className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
-                          target="_blank"
-                        >
-                          View {item.entity_type}
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium text-white">{item.language}</TableCell>
-                    <TableCell className="text-neutral-300">
-                      <div className="space-y-4">
-                        {item.originalContent && (
-                          <div className="bg-neutral-800 p-3 rounded-lg">
-                            <div className="text-sm text-neutral-400 mb-2">Original Content:</div>
-                            <div className="text-neutral-200">
-                              {item.expanded
-                                ? item.originalContent
-                                : `${item.originalContent.slice(0, 200)}${
-                                    item.originalContent.length > 200 ? '...' : ''
-                                  }`}
-                            </div>
-                          </div>
-                        )}
-                        <div>
-                          <div className="text-sm text-neutral-400 mb-2">New Content:</div>
-                          <div>
-                            {item.expanded
-                              ? item.content
-                              : `${item.content.slice(0, 200)}${
-                                  item.content.length > 200 ? '...' : ''
-                                }`}
-                          </div>
-                        </div>
-                        {(item.content.length > 200 || (item.originalContent && item.originalContent.length > 200)) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleExpand(item.id)}
-                            className="text-neutral-400 hover:text-white"
-                          >
-                            {item.expanded ? (
-                              <>
-                                <ChevronUp className="w-4 h-4 mr-1" />
-                                See Less
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="w-4 h-4 mr-1" />
-                                See More
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-neutral-300">
-                      {item.profiles?.username || item.profiles?.email || 'Anonymous'}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          item.status === 'approved'
-                            ? 'bg-green-500/20 text-green-400'
-                            : item.status === 'rejected'
-                            ? 'bg-red-500/20 text-red-400'
-                            : 'bg-yellow-500/20 text-yellow-400'
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-neutral-300">
-                      {formatDate(item.created_at)}
-                    </TableCell>
-                    <TableCell>
-                      {item.status === 'pending' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-green-400 hover:text-green-300 hover:bg-neutral-800"
-                            onClick={() => handleStatusUpdate(item.id, 'approved')}
-                            disabled={isUpdating[item.id]}
-                          >
-                            {isUpdating[item.id] ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Check className="w-4 h-4" />
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-400 hover:text-red-300 hover:bg-neutral-800"
-                            onClick={() => handleStatusUpdate(item.id, 'rejected')}
-                            disabled={isUpdating[item.id]}
-                          >
-                            {isUpdating[item.id] ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <X className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        )}
       </div>
     </div>
   );

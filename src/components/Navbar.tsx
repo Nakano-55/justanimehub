@@ -230,7 +230,11 @@ export default function Navbar() {
             
             {/* Common Actions */}
             <div className="flex items-center gap-2 md:gap-4">
-              <LanguageSwitcher currentLang={lang} />
+              {/* Language Switcher - Show on desktop, hide on mobile */}
+              <div className="hidden md:flex">
+                <LanguageSwitcher currentLang={lang} />
+              </div>
+              
               {user ? (
                 <div className="flex items-center gap-2">
                   <NotificationBell lang={lang} />

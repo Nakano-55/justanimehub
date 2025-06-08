@@ -146,7 +146,7 @@ export function AuthButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Login to Contribute</Button>
+        <Button variant="outline">Login</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-neutral-900 text-white">
         <DialogHeader>

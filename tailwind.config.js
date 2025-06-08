@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+console.log("🟢 Loaded tailwind.config.js");
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class", "class"], // Pastikan ini tetap "class"

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+console.log("🟡 Loaded tailwind.config.ts");
 import type { Config } from "tailwindcss";
 
 const config: Config = {
