@@ -45,6 +45,9 @@ const translations = {
     removeConfirm: 'Are you sure you want to remove this admin?',
     createdAt: 'Added on',
     userNotFound: 'User not found',
+    cannotRemoveSelf: 'You cannot remove yourself as admin',
+    mustHaveOneAdmin: 'There must be at least one admin user',
+    removing: 'Removing...',
   },
   id: {
     settings: 'Pengaturan Admin',
@@ -63,6 +66,9 @@ const translations = {
     removeConfirm: 'Apakah Anda yakin ingin menghapus admin ini?',
     createdAt: 'Ditambahkan pada',
     userNotFound: 'Pengguna tidak ditemukan',
+    cannotRemoveSelf: 'Anda tidak dapat menghapus diri sendiri sebagai admin',
+    mustHaveOneAdmin: 'Harus ada setidaknya satu pengguna admin',
+    removing: 'Menghapus...',
   },
 } as const;
 
@@ -71,6 +77,8 @@ export default function AdminSettingsPage() {
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const supabase = createClientComponentClient<Database>();
@@ -83,10 +91,15 @@ export default function AdminSettingsPage() {
         setIsLoading(true);
         setError(null);
 
-        // Check if current user is admin
+        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          throw new Error('Not authenticated');
+        }
 
+        setCurrentUserId(user.id);
+
+        // Check if current user is admin
         const { data: adminCheck } = await supabase
           .from('admin_users')
           .select('id')
@@ -103,12 +116,17 @@ export default function AdminSettingsPage() {
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (adminsError) throw adminsError;
+        if (adminsError) {
+          console.error('Error fetching admins:', adminsError);
+          throw adminsError;
+        }
+
+        console.log('Fetched admin users:', admins);
         setAdminUsers(admins || []);
 
       } catch (err) {
         console.error('Error fetching admin users:', err);
-        setError(t.error);
+        setError(err instanceof Error ? err.message : t.error);
       } finally {
         setIsLoading(false);
       }
@@ -126,7 +144,8 @@ export default function AdminSettingsPage() {
           schema: 'public',
           table: 'admin_users',
         },
-        () => {
+        (payload) => {
+          console.log('Admin users changed:', payload);
           fetchAdminUsers();
         }
       )
@@ -154,6 +173,17 @@ export default function AdminSettingsPage() {
         throw new Error(t.userNotFound);
       }
 
+      // Check if user is already an admin
+      const { data: existingAdmin } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('id', profile.id)
+        .single();
+
+      if (existingAdmin) {
+        throw new Error('User is already an admin');
+      }
+
       // Add user to admin_users table
       const { error: insertError } = await supabase
         .from('admin_users')
@@ -162,7 +192,10 @@ export default function AdminSettingsPage() {
           email: newAdminEmail.trim(),
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
 
       setNewAdminEmail('');
       toast({
@@ -181,15 +214,47 @@ export default function AdminSettingsPage() {
   };
 
   const handleRemoveAdmin = async (adminId: string) => {
+    // Prevent removing self
+    if (adminId === currentUserId) {
+      toast({
+        title: 'Error',
+        description: t.cannotRemoveSelf,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Prevent removing last admin
+    if (adminUsers.length <= 1) {
+      toast({
+        title: 'Error',
+        description: t.mustHaveOneAdmin,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!window.confirm(t.removeConfirm)) return;
 
     try {
+      setRemovingIds(prev => new Set(prev).add(adminId));
+
+      console.log('Attempting to remove admin:', adminId);
+
       const { error } = await supabase
         .from('admin_users')
         .delete()
         .eq('id', adminId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
+
+      console.log('Admin removed successfully');
+
+      // Update local state immediately
+      setAdminUsers(prev => prev.filter(admin => admin.id !== adminId));
 
       toast({
         description: t.removeSuccess,
@@ -198,8 +263,14 @@ export default function AdminSettingsPage() {
       console.error('Error removing admin:', error);
       toast({
         title: 'Error',
-        description: t.removeError,
+        description: error instanceof Error ? error.message : t.removeError,
         variant: 'destructive',
+      });
+    } finally {
+      setRemovingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(adminId);
+        return newSet;
       });
     }
   };
@@ -258,6 +329,7 @@ export default function AdminSettingsPage() {
             <div className="flex items-center gap-3 mb-6">
               <Shield className="w-6 h-6 text-violet-500" />
               <h2 className="text-xl font-semibold">{t.adminUsers}</h2>
+              <span className="text-sm text-neutral-400">({adminUsers.length} total)</span>
             </div>
 
             <div className="space-y-6">
@@ -269,6 +341,11 @@ export default function AdminSettingsPage() {
                     value={newAdminEmail}
                     onChange={(e) => setNewAdminEmail(e.target.value)}
                     className="bg-neutral-800 border-neutral-700"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleAddAdmin();
+                      }
+                    }}
                   />
                 </div>
                 <Button
@@ -286,33 +363,60 @@ export default function AdminSettingsPage() {
               </div>
 
               <div className="space-y-4">
-                {adminUsers.map((admin) => (
-                  <div
-                    key={admin.id}
-                    className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-violet-500" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-neutral-500" />
-                          <span>{admin.email}</span>
-                        </div>
-                        <p className="text-sm text-neutral-500">
-                          {t.createdAt}: {formatDate(admin.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveAdmin(admin.id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-950/50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                {adminUsers.length === 0 ? (
+                  <div className="text-center py-8 text-neutral-400">
+                    No admin users found
                   </div>
-                ))}
+                ) : (
+                  adminUsers.map((admin) => (
+                    <div
+                      key={admin.id}
+                      className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Users className="w-5 h-5 text-violet-500" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-neutral-500" />
+                            <span>{admin.email}</span>
+                            {admin.id === currentUserId && (
+                              <span className="text-xs bg-violet-600 text-white px-2 py-1 rounded">
+                                You
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-neutral-500">
+                            {t.createdAt}: {formatDate(admin.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveAdmin(admin.id)}
+                        disabled={
+                          removingIds.has(admin.id) || 
+                          admin.id === currentUserId || 
+                          adminUsers.length <= 1
+                        }
+                        className="text-red-400 hover:text-red-300 hover:bg-red-950/50 disabled:opacity-50"
+                        title={
+                          admin.id === currentUserId 
+                            ? t.cannotRemoveSelf 
+                            : adminUsers.length <= 1 
+                            ? t.mustHaveOneAdmin 
+                            : t.remove
+                        }
+                      >
+                        {removingIds.has(admin.id) ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </Card>
