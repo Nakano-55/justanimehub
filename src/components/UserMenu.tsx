@@ -1,8 +1,9 @@
 'use client';
 
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Shield } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import Link from 'next/link';
 import { useLanguage } from './LanguageProvider';
-import { useState } from 'react';
+import type { Database } from '@/lib/database.types';
 
 interface UserMenuProps {
   email: string;
@@ -34,6 +35,7 @@ interface UserMenuProps {
 const translations = {
   en: {
     profile: 'Profile',
+    adminPanel: 'Admin Panel',
     signOut: 'Sign Out',
     signOutSuccess: 'You have been signed out',
     signOutError: 'Failed to sign out',
@@ -44,6 +46,7 @@ const translations = {
   },
   id: {
     profile: 'Profil',
+    adminPanel: 'Panel Admin',
     signOut: 'Keluar',
     signOutSuccess: 'Anda telah keluar',
     signOutError: 'Gagal keluar',
@@ -58,9 +61,32 @@ export function UserMenu({ email }: UserMenuProps) {
   const { lang } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createClientComponentClient<Database>();
   const t = translations[lang];
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+        setIsAdmin(!!adminUser);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [supabase]);
 
   const handleSignOut = async () => {
     try {
@@ -100,6 +126,14 @@ export function UserMenu({ email }: UserMenuProps) {
               <span>{t.profile}</span>
             </Link>
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem asChild>
+              <Link href={`/${lang}/admin`}>
+                <Shield className="mr-2 h-4 w-4" />
+                <span>{t.adminPanel}</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => setShowConfirmDialog(true)}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>{t.signOut}</span>
