@@ -188,36 +188,36 @@ export default function CharacterPage() {
   return (
     <div className="min-h-screen bg-neutral-950 text-white pt-20">
       <div className="container mx-auto px-6">
-        <div className="mb-8">
+        <div className="mb-4 md:mb-8">
           <Link
             href={`/${lang}/anime`}
-            className="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm md:text-base"
           >
             <ArrowLeft className="w-4 h-4" />
             {t.back}
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-[320px_1fr] gap-8">
-          <div className="space-y-6">
+        <div className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-4 md:gap-8">
+          <div className="space-y-4 md:space-y-6">
             <div className="relative">
               <Image
                 src={character.images.jpg.image_url}
-                width={300}
-                height={400}
-                className="rounded-lg shadow-lg"
+                width={280}
+                height={380}
+                className="w-full rounded-lg shadow-lg"
                 alt={character.name}
                 priority
               />
             </div>
 
-            <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
+            <div className="bg-neutral-900 rounded-lg p-4 md:p-6 space-y-3 md:space-y-4">
               <div className="text-center">
-                <div className="flex items-center justify-center text-2xl font-bold text-red-500">
-                  <Heart className="w-6 h-6 mr-2" />
-                  {character.favorites.toLocaleString()}
+                <div className="flex items-center justify-center text-xl md:text-2xl font-bold text-red-500">
+                  <Heart className="w-5 h-5 md:w-6 md:h-6 mr-2" />
+                  <span className="break-all">{character.favorites.toLocaleString()}</span>
                 </div>
-                <p className="text-sm text-neutral-400">{t.favorites}</p>
+                <p className="text-xs md:text-sm text-neutral-400">{t.favorites}</p>
               </div>
 
               <div className="flex justify-center">
@@ -232,7 +232,7 @@ export default function CharacterPage() {
 
               {character.nicknames.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-neutral-400 mb-2">
+                  <h3 className="text-xs md:text-sm font-medium text-neutral-400 mb-2">
                     {t.nicknames}
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -240,7 +240,7 @@ export default function CharacterPage() {
                       <Badge
                         key={index}
                         variant="secondary"
-                        className="bg-violet-600/30 text-violet-300"
+                        className="bg-violet-600/30 text-violet-300 text-xs"
                       >
                         {nickname}
                       </Badge>
@@ -251,37 +251,62 @@ export default function CharacterPage() {
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div>
+          <div className="space-y-4 md:space-y-8 min-w-0">
+            <div className="min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">{character.name}</h1>
+                  <h1 className="text-2xl md:text-4xl font-bold mb-2 break-words">{character.name}</h1>
                   {character.name_kanji && (
-                    <p className="text-xl text-neutral-400">{character.name_kanji}</p>
+                    <p className="text-lg md:text-xl text-neutral-400 break-words">{character.name_kanji}</p>
                   )}
                 </div>
               </div>
             </div>
 
-            <Tabs defaultValue="about" className="w-full">
-              <TabsList className="bg-neutral-900">
-                <TabsTrigger value="about">{t.about}</TabsTrigger>
-                {character.anime.length > 0 && (
-                  <TabsTrigger value="anime">{t.animeAppearances}</TabsTrigger>
-                )}
-                {character.manga.length > 0 && (
-                  <TabsTrigger value="manga">{t.mangaAppearances}</TabsTrigger>
-                )}
-                {character.voices.length > 0 && (
-                  <TabsTrigger value="voices">{t.voiceActors}</TabsTrigger>
-                )}
-              </TabsList>
+            <Tabs defaultValue="about" className="w-full min-w-0">
+              <div className="max-w-screen-lg mx-auto px-4">
+                <TabsList className="bg-neutral-900 p-1 w-full flex justify-between gap-2">
+                  <TabsTrigger 
+                    value="about"
+                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                  >
+                    <span>{t.about}</span>
+                  </TabsTrigger>
+                  {character.anime.length > 0 && (
+                    <TabsTrigger 
+                      value="anime"
+                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    >
+                      <span className="hidden sm:inline">{t.animeAppearances}</span>
+                      <span className="sm:hidden">Anime</span>
+                    </TabsTrigger>
+                  )}
+                  {character.manga.length > 0 && (
+                    <TabsTrigger 
+                      value="manga"
+                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    >
+                      <span className="hidden sm:inline">{t.mangaAppearances}</span>
+                      <span className="sm:hidden">Manga</span>
+                    </TabsTrigger>
+                  )}
+                  {character.voices.length > 0 && (
+                    <TabsTrigger 
+                      value="voices"
+                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    >
+                      <span className="hidden sm:inline">{t.voiceActors}</span>
+                      <span className="sm:hidden">Voices</span>
+                    </TabsTrigger>
+                  )}
+                </TabsList>
+              </div>
 
               <TabsContent value="about" className="mt-4">
-                <div className="bg-neutral-900 rounded-lg p-6">
+                <div className="bg-neutral-900 rounded-lg p-4 md:p-6">
                   <div className="space-y-4">
-                    <h2 className="text-xl font-semibold">{t.about}</h2>
-                    <p className="text-neutral-200 whitespace-pre-line">
+                    <h2 className="text-lg md:text-xl font-semibold">{t.about}</h2>
+                    <p className="text-neutral-200 whitespace-pre-line break-words text-sm md:text-base text-justify">
                       {description || character.about || t.noDescription}
                     </p>
                     <TranslationContributor
@@ -297,26 +322,27 @@ export default function CharacterPage() {
 
               {character.anime.length > 0 && (
                 <TabsContent value="anime" className="mt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {character.anime.map((appearance, index) => (
                       <Link
                         key={`${appearance.anime.mal_id}-${index}`}
                         href={`/${lang}/anime/${appearance.anime.mal_id}`}
                         className="bg-neutral-900 rounded-lg overflow-hidden hover:ring-2 hover:ring-violet-500/50 transition-all"
                       >
-                        <div className="relative aspect-video">
+                        <div className="relative aspect-[3/4]">
                           <Image
                             src={appearance.anime.images.jpg.image_url}
                             alt={appearance.anime.title}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 33vw, 25vw"
                           />
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-medium line-clamp-2 hover:text-violet-400 transition-colors">
+                        <div className="p-2 md:p-4">
+                          <h3 className="font-medium line-clamp-2 hover:text-violet-400 transition-colors text-xs md:text-sm">
                             {appearance.anime.title}
                           </h3>
-                          <p className="text-sm text-neutral-400 mt-1">
+                          <p className="text-xs md:text-sm text-neutral-400 mt-1">
                             {t.role}: {appearance.role}
                           </p>
                         </div>
@@ -328,7 +354,7 @@ export default function CharacterPage() {
 
               {character.manga.length > 0 && (
                 <TabsContent value="manga" className="mt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {character.manga.map((appearance, index) => (
                       <div
                         key={`${appearance.manga.mal_id}-${index}`}
@@ -340,13 +366,14 @@ export default function CharacterPage() {
                             alt={appearance.manga.title}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 33vw, 25vw"
                           />
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-medium line-clamp-2">
+                        <div className="p-2 md:p-4">
+                          <h3 className="font-medium line-clamp-2 text-xs md:text-sm">
                             {appearance.manga.title}
                           </h3>
-                          <p className="text-sm text-neutral-400 mt-1">
+                          <p className="text-xs md:text-sm text-neutral-400 mt-1">
                             {t.role}: {appearance.role}
                           </p>
                         </div>
@@ -358,7 +385,7 @@ export default function CharacterPage() {
 
               {character.voices.length > 0 && (
                 <TabsContent value="voices" className="mt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {character.voices.map((voice, index) => (
                       <div
                         key={`${voice.person.mal_id}-${index}`}
@@ -370,13 +397,14 @@ export default function CharacterPage() {
                             alt={voice.person.name}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 33vw, 25vw"
                           />
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-medium line-clamp-2">
+                        <div className="p-2 md:p-4">
+                          <h3 className="font-medium line-clamp-2 text-xs md:text-sm">
                             {voice.person.name}
                           </h3>
-                          <p className="text-sm text-neutral-400 mt-1">
+                          <p className="text-xs md:text-sm text-neutral-400 mt-1">
                             {t.language}: {voice.language}
                           </p>
                         </div>

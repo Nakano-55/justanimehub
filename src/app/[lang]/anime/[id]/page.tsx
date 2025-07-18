@@ -333,10 +333,10 @@ export default function AnimeDetailPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white pt-20">
-      <div className="sticky top-20 left-0 w-full z-[100] px-4 md:px-8 mb-4">
+      <div className="sticky top-20 left-0 w-full z-[100] px-4 md:px-8 mb-4 overflow-hidden">
         <Link
           href={`/${lang}/anime`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900/80 backdrop-blur-sm rounded-lg text-white hover:bg-neutral-800/80 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-2 md:px-4 bg-neutral-900/80 backdrop-blur-sm rounded-lg text-white hover:bg-neutral-800/80 transition-colors text-sm md:text-base"
         >
           <ArrowLeft className="w-4 h-4" />
           {t.back}
@@ -354,32 +354,32 @@ export default function AnimeDetailPage() {
         <div className="absolute inset-0 bg-black/60" />
       </div>
 
-      <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-[320px_1fr] gap-8">
-          <div className="space-y-6">
-            <div className="relative -mt-32 z-10">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-4 md:gap-8">
+          <div className="space-y-4 md:space-y-6">
+            <div className="relative -mt-32 z-10 md:-mt-32">
               <Image
                 src={anime.images.jpg.large_image_url}
-                width={320}
-                height={450}
-                className="rounded-lg shadow-2xl"
+                width={280}
+                height={380}
+                className="w-full rounded-lg shadow-lg"
                 alt={anime.title}
                 priority
               />
             </div>
 
-            <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
+            <div className="bg-neutral-900 rounded-lg p-4 md:p-6 space-y-3 md:space-y-4">
               <div className="text-center">
-                <div className="flex items-center justify-center text-3xl font-bold text-yellow-500 mb-1">
-                  <Star className="w-8 h-8 mr-2" />
+                <div className="flex items-center justify-center text-xl md:text-2xl font-bold text-yellow-500 mb-1">
+                  <Star className="w-5 h-5 md:w-6 mr-2" />
                   {anime.score || 'N/A'}
                 </div>
-                <p className="text-sm text-neutral-400">
+                <p className="text-xs md:text-sm text-neutral-400">
                   {anime.scored_by ? `${formatNumber(anime.scored_by)} ${t.ratings}` : 'No ratings yet'}
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                 <div className="space-y-1">
                   <p className="text-neutral-400">{t.rank}</p>
                   <p className="font-semibold flex items-center">
@@ -411,10 +411,10 @@ export default function AnimeDetailPage() {
               </div>
             </div>
 
-            <div className="bg-neutral-900 rounded-lg p-6 space-y-4">
-              <h3 className="font-semibold text-lg">{t.information}</h3>
+            <div className="bg-neutral-900 rounded-lg p-4 md:p-6 space-y-3 md:space-y-4">
+              <h3 className="font-semibold text-base md:text-lg">{t.information}</h3>
 
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2 md:space-y-3 text-xs md:text-sm">
                 <div className="flex items-start">
                   <Tv className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
                   <div>
@@ -489,13 +489,13 @@ export default function AnimeDetailPage() {
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">
+          <div className="space-y-4 md:space-y-8 min-w-0">
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-4xl font-bold mb-2">
                 {anime.title}
               </h1>
-              <div className="flex gap-2 mb-4">
-                <BookmarkButtons 
+              <div className="flex flex-wrap gap-2 mb-4">
+                <BookmarkButtons
                   entityId={anime.mal_id}
                   entityType="anime"
                   title={anime.title}
@@ -505,18 +505,18 @@ export default function AnimeDetailPage() {
                 />
               </div>
               {anime.title_english && anime.title_english !== anime.title && (
-                <h2 className="text-2xl text-neutral-400">{anime.title_english}</h2>
+                <h2 className="text-lg md:text-2xl text-neutral-400">{anime.title_english}</h2>
               )}
-              <h3 className="text-xl text-neutral-500 mt-1">{anime.title_japanese}</h3>
+              <h3 className="text-base md:text-xl text-neutral-500 mt-1">{anime.title_japanese}</h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 min-w-0">
               {anime.genres.length > 0 && (
                 <div>
-                  <h4 className="text-sm text-neutral-400 mb-2">{t.genres}</h4>
+                  <h4 className="text-xs md:text-sm text-neutral-400 mb-2">{t.genres}</h4>
                   <div className="flex flex-wrap gap-2">
                     {anime.genres.map(genre => (
-                      <Badge key={genre.name} variant="secondary" className="bg-violet-600/30 text-violet-300">
+                      <Badge key={genre.name} variant="secondary" className="bg-violet-600/30 text-violet-300 text-xs">
                         {genre.name}
                       </Badge>
                     ))}
@@ -526,10 +526,10 @@ export default function AnimeDetailPage() {
 
               {anime.themes && anime.themes.length > 0 && (
                 <div>
-                  <h4 className="text-sm text-neutral-400 mb-2">{t.themes}</h4>
+                  <h4 className="text-xs md:text-sm text-neutral-400 mb-2">{t.themes}</h4>
                   <div className="flex flex-wrap gap-2">
                     {anime.themes.map(theme => (
-                      <Badge key={theme.name} variant="secondary" className="bg-blue-600/30 text-blue-300">
+                      <Badge key={theme.name} variant="secondary" className="bg-blue-600/30 text-blue-300 text-xs">
                         {theme.name}
                       </Badge>
                     ))}
@@ -539,10 +539,10 @@ export default function AnimeDetailPage() {
 
               {anime.demographics && anime.demographics.length > 0 && (
                 <div>
-                  <h4 className="text-sm text-neutral-400 mb-2">{t.demographics}</h4>
+                  <h4 className="text-xs md:text-sm text-neutral-400 mb-2">{t.demographics}</h4>
                   <div className="flex flex-wrap gap-2">
                     {anime.demographics.map(demo => (
-                      <Badge key={demo.name} variant="secondary" className="bg-green-600/30 text-green-300">
+                      <Badge key={demo.name} variant="secondary" className="bg-green-600/30 text-green-300 text-xs">
                         {demo.name}
                       </Badge>
                     ))}
@@ -551,68 +551,70 @@ export default function AnimeDetailPage() {
               )}
             </div>
 
-            <Tabs defaultValue="synopsis" className="w-full">
-              <TabsList className="bg-neutral-900 p-1">
-                <TabsTrigger 
-                  value="synopsis" 
-                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  {t.synopsis}
-                </TabsTrigger>
-                {anime.background && (
+            <Tabs defaultValue="synopsis" className="w-full min-w-0">
+              <div className="w-full px-2 md:px-0">
+                <TabsList className="bg-neutral-900 p-1 w-full flex justify-between gap-2">
                   <TabsTrigger 
-                    value="background"
-                    className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
+                    value="synopsis"
+                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
                   >
-                    <BookOpen className="w-4 h-4" />
-                    {t.background}
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden md:inline">{t.synopsis}</span>
                   </TabsTrigger>
+                {anime.background && (
+                    <TabsTrigger 
+                      value="background"
+                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span className="hidden md:inline">{t.background}</span>
+                    </TabsTrigger>
                 )}
                 {characters.length > 0 && (
-                  <TabsTrigger 
-                    value="characters"
-                    className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
-                  >
-                    <User className="w-4 h-4" />
-                    {t.characters}
-                  </TabsTrigger>
+                    <TabsTrigger 
+                      value="characters"
+                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    >
+                      <User className="w-4 h-4" />
+                      <span className="hidden md:inline">{t.characters}</span>
+                    </TabsTrigger>
                 )}
-                <TabsTrigger 
-                  value="relations"
-                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
-                >
-                  <GitBranch className="w-4 h-4" />
-                  Relations
-                </TabsTrigger>
+                  <TabsTrigger 
+                    value="relations"
+                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                  >
+                    <GitBranch className="w-4 h-4" />
+                    <span className="hidden md:inline">Relations</span>
+                  </TabsTrigger>
                 {anime.trailer?.youtube_id && (
-                  <TabsTrigger 
-                    value="trailer"
-                    className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
-                  >
-                    <PlaySquare className="w-4 h-4" />
-                    {t.trailer}
-                  </TabsTrigger>
+                    <TabsTrigger 
+                      value="trailer"
+                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    >
+                      <PlaySquare className="w-4 h-4" />
+                      <span className="hidden md:inline">{t.trailer}</span>
+                    </TabsTrigger>
                 )}
-                <TabsTrigger 
-                  value="reviews"
-                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
-                >
-                  <Star className="w-4 h-4" />
-                  {t.reviews}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="discussions"
-                  className="flex items-center gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  {t.discussions}
-                </TabsTrigger>
-              </TabsList>
+                  <TabsTrigger 
+                    value="reviews"
+                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                  >
+                    <Star className="w-4 h-4" />
+                    <span className="hidden md:inline">{t.reviews}</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="discussions"
+                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="hidden md:inline">{t.discussions}</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value="synopsis" className="mt-4">
-                <div className="bg-neutral-900 rounded-lg p-6">
-                  <p className="text-neutral-200 leading-relaxed whitespace-pre-line">
+                <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
+                  <p className="text-neutral-200 leading-relaxed whitespace-pre-line text-sm md:text-base text-justify">
                     {translations.synopsis || anime.synopsis}
                   </p>
                   <TranslationContributor
@@ -627,8 +629,8 @@ export default function AnimeDetailPage() {
 
               {anime.background && (
                 <TabsContent value="background" className="mt-4">
-                  <div className="bg-neutral-900 rounded-lg p-6">
-                    <p className="text-neutral-200 leading-relaxed whitespace-pre-line">
+                  <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
+                    <p className="text-neutral-200 leading-relaxed whitespace-pre-line text-sm md:text-base text-justify">
                       {translations.background || anime.background}
                     </p>
                     <TranslationContributor
@@ -644,7 +646,7 @@ export default function AnimeDetailPage() {
 
               {characters.length > 0 && (
                 <TabsContent value="characters" className="mt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 px-2 md:px-0">
                     {currentCharacters.map((char) => (
                       <Link
                         key={char.character.mal_id}
@@ -653,29 +655,29 @@ export default function AnimeDetailPage() {
                       >
                         <Card className="bg-neutral-900 border-neutral-800 overflow-hidden transition-all duration-300 group-hover:-translate-y-1">
                           <CardContent className="p-0">
-                            <div className="relative aspect-[3/4]">
+                            <div className="relative aspect-[3/4] overflow-hidden">
                               <Image
                                 src={char.character.images.jpg.image_url}
                                 alt={char.character.name}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             </div>
-                            <div className="p-4">
-                              <h4 className="font-semibold text-sm mb-1 group-hover:text-violet-400 transition-colors">
+                            <div className="p-2 md:p-4">
+                              <h4 className="font-semibold text-xs md:text-sm mb-1 group-hover:text-violet-400 transition-colors line-clamp-2">
                                 {char.character.name}
                               </h4>
-                              <p className="text-sm text-neutral-400">{char.role}</p>
+                              <p className="text-xs md:text-sm text-neutral-400 line-clamp-1">{char.role}</p>
                               {char.voice_actors?.length > 0 && (
-                                <div className="mt-2 pt-2 border-t border-neutral-800">
-                                  <p className="text-xs text-neutral-500 mb-1">{t.voiceActors}</p>
+                                <div className="mt-1 md:mt-2 pt-1 md:pt-2 border-t border-neutral-800">
+                                  <p className="text-xs text-neutral-500 mb-1 hidden md:block">{t.voiceActors}</p>
                                   {char.voice_actors.slice(0, 2).map((va, index) => (
-                                    <div key={index} className="flex items-center text-xs text-neutral-400">
-                                      <span>{va.person.name}</span>
+                                    <div key={index} className="flex items-center text-xs text-neutral-400 line-clamp-1">
+                                      <span className="truncate">{va.person.name}</span>
                                       <span className="mx-1">•</span>
-                                      <span>{va.language}</span>
+                                      <span className="truncate">{va.language}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -690,22 +692,24 @@ export default function AnimeDetailPage() {
                   {totalPages > 1 && (
                     <div className="flex justify-center items-center gap-4 mt-8">
                       <Button
+                        size="sm"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 text-xs md:text-sm"
                       >
                         <ChevronLeft className="w-4 h-4" />
-                        {t.previous}
+                        <span className="hidden sm:inline">{t.previous}</span>
                       </Button>
-                      <span className="text-sm">
+                      <span className="text-xs md:text-sm whitespace-nowrap">
                         {t.page} {currentPage} {t.of} {totalPages}
                       </span>
                       <Button
+                        size="sm"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 text-xs md:text-sm"
                       >
-                        {t.next}
+                        <span className="hidden sm:inline">{t.next}</span>
                         <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>
@@ -714,14 +718,14 @@ export default function AnimeDetailPage() {
               )}
 
               <TabsContent value="relations" className="mt-4">
-                <div className="bg-neutral-900 rounded-lg p-6">
+                <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
                   <AnimeRelations animeId={parseInt(id)} lang={lang} />
                 </div>
               </TabsContent>
 
               {anime.trailer?.youtube_id && (
                 <TabsContent value="trailer" className="mt-4">
-                  <div className="bg-neutral-900 rounded-lg p-6">
+                  <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
                     <div className="relative pb-[56.25%]">
                       <iframe
                         className="absolute top-0 left-0 w-full h-full rounded-lg"
@@ -735,13 +739,13 @@ export default function AnimeDetailPage() {
               )}
 
               <TabsContent value="reviews" className="mt-4">
-                <div className="bg-neutral-900 rounded-lg p-6">
+                <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
                   <ReviewList animeId={parseInt(id)} lang={lang} />
                 </div>
               </TabsContent>
 
               <TabsContent value="discussions" className="mt-4">
-                <div className="bg-neutral-900 rounded-lg p-6">
+                <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
                   <DiscussionList animeId={parseInt(id)} lang={lang} />
                 </div>
               </TabsContent>
