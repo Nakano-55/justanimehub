@@ -215,38 +215,39 @@ export function TranslationContributor({
           {currentVersion ? t.improveTranslation : t.addTranslation}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] bg-neutral-900 text-white">
+      <DialogContent className="w-[95vw] max-w-[500px] mx-auto bg-neutral-900 text-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {currentVersion ? t.improveTranslation : t.addTranslation}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {t.helpImprove} {t.review}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 mt-4">
+        <div className="space-y-4 mt-4 px-1">
           <div>
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium block mb-2">
               {t.originalText}
             </label>
-            <p className="mt-1 p-3 rounded-md bg-neutral-800 text-sm text-neutral-300">
+            <div className="p-3 rounded-md bg-neutral-800 text-sm text-neutral-300 max-h-32 overflow-y-auto">
               {originalText}
-            </p>
+            </div>
           </div>
           <div>
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium block mb-2">
               {t.yourTranslation}
             </label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="mt-1 w-full rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none min-h-[100px]"
+              className="w-full rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none min-h-[100px] resize-none"
               placeholder={`Enter content in ${currentLanguage === 'id' ? 'Indonesian' : 'English'}...`}
             />
           </div>
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
             <Button
               variant="ghost"
+              className="w-full sm:w-auto"
               onClick={() => setIsOpen(false)}
             >
               {t.cancel}
@@ -254,7 +255,7 @@ export function TranslationContributor({
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !content.trim()}
-              className="bg-violet-600 hover:bg-violet-500"
+              className="bg-violet-600 hover:bg-violet-500 w-full sm:w-auto"
             >
               {isSubmitting ? t.submitting : t.submit}
             </Button>

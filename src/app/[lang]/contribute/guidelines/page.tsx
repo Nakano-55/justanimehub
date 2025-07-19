@@ -34,23 +34,11 @@ interface Section {
 interface TranslationType {
   title: string;
   subtitle: string;
-  checklist: {
-    title: string;
-    items: string[];
-  };
   examples: {
     title: string;
     good: ExampleSection;
     bad: ExampleSection;
   };
-  feedback: {
-    title: string;
-    yes: string;
-    no: string;
-    thanks: string;
-  };
-  copy: string;
-  copied: string;
   sections: {
     general: Section;
     format: Section;
@@ -63,22 +51,14 @@ interface TranslationType {
     title: string;
     items: string[];
   };
+  copy: string;
+  copied: string;
 }
 
 const translations = {
   en: {
     title: 'Contribution Guidelines',
     subtitle: 'Help us build a better anime community by following these guidelines',
-    checklist: {
-      title: 'Contribution Checklist',
-      items: [
-        'I have read and understood the guidelines',
-        'My contribution is original and not copied from elsewhere',
-        'I have checked for spelling and grammar errors',
-        'My content follows the formatting guidelines',
-        'I have included all necessary information'
-      ]
-    },
     examples: {
       title: 'Examples',
       good: {
@@ -112,14 +92,6 @@ const translations = {
         ]
       }
     },
-    feedback: {
-      title: 'Was this helpful?',
-      yes: 'Yes',
-      no: 'No',
-      thanks: 'Thank you for your feedback!'
-    },
-    copy: 'Copy',
-    copied: 'Copied!',
     sections: {
       general: {
         title: 'General Guidelines',
@@ -163,16 +135,25 @@ const translations = {
           'Submit translations in the target language',
           'Wait for moderator review (usually within 24-48 hours)',
           'Receive notification when your contribution is approved/rejected',
-          'If rejected, review feedback and resubmit with improvements'
+          'If rejected, users may submit a revised version based on the platform guidelines'
         ]
       },
       quality: {
         title: 'Quality Standards',
         items: [
-          'Maintain natural language flow in translations',
-          'Preserve original meaning and context',
-          'Use appropriate terminology for anime/manga content',
-          'Follow consistent style throughout translations'
+          'Maintain consistency with existing content style',
+          'Ensure translations are culturally appropriate',
+          'Use proper terminology for anime-specific terms',
+          'Verify accuracy against original source material'
+        ]
+      },
+      review: {
+        title: 'Review Process',
+        items: [
+          'All contributions are reviewed by our moderation team',
+          'Reviews typically take 24-48 hours to complete',
+          'You will receive email notifications about review status',
+          'Approved content becomes immediately visible to all users'
         ]
       }
     },
@@ -184,21 +165,13 @@ const translations = {
         'Keep a glossary of common terms',
         'Review your translation after a short break'
       ]
-    }
+    },
+    copy: 'Copy',
+    copied: 'Copied!'
   },
   id: {
     title: 'Pedoman Kontribusi',
     subtitle: 'Bantu kami membangun komunitas anime yang lebih baik dengan mengikuti pedoman ini',
-    checklist: {
-      title: 'Daftar Periksa Kontribusi',
-      items: [
-        'Saya telah membaca dan memahami pedoman',
-        'Kontribusi saya asli dan tidak disalin dari tempat lain',
-        'Saya telah memeriksa kesalahan ejaan dan tata bahasa',
-        'Konten saya mengikuti pedoman format',
-        'Saya telah menyertakan semua informasi yang diperlukan'
-      ]
-    },
     examples: {
       title: 'Contoh',
       good: {
@@ -232,14 +205,6 @@ const translations = {
         ]
       }
     },
-    feedback: {
-      title: 'Apakah ini membantu?',
-      yes: 'Ya',
-      no: 'Tidak',
-      thanks: 'Terima kasih atas feedback Anda!'
-    },
-    copy: 'Salin',
-    copied: 'Tersalin!',
     sections: {
       general: {
         title: 'Pedoman Umum',
@@ -283,16 +248,25 @@ const translations = {
           'Kirim terjemahan dalam bahasa target',
           'Tunggu peninjauan moderator (biasanya 24-48 jam)',
           'Terima notifikasi saat kontribusi disetujui/ditolak',
-          'Jika ditolak, tinjau feedback dan kirim ulang dengan perbaikan'
+          'Jika ditolak, pengguna dapat mengirim ulang versi terjemahan lain sesuai kebijakan yang berlaku.'
         ]
       },
       quality: {
         title: 'Standar Kualitas',
         items: [
-          'Pertahankan alur bahasa yang natural',
-          'Pertahankan makna dan konteks asli',
-          'Gunakan terminologi yang sesuai untuk konten anime/manga',
-          'Ikuti gaya yang konsisten dalam terjemahan'
+          'Pertahankan konsistensi dengan gaya konten yang ada',
+          'Pastikan terjemahan sesuai secara budaya',
+          'Gunakan terminologi yang tepat untuk istilah khusus anime',
+          'Verifikasi akurasi terhadap materi sumber asli'
+        ]
+      },
+      review: {
+        title: 'Proses Review',
+        items: [
+          'Semua kontribusi ditinjau oleh tim moderasi kami',
+          'Review biasanya memakan waktu 24-48 jam',
+          'Anda akan menerima notifikasi email tentang status review',
+          'Konten yang disetujui langsung terlihat oleh semua pengguna'
         ]
       }
     },
@@ -304,15 +278,15 @@ const translations = {
         'Buat daftar istilah umum',
         'Tinjau terjemahan Anda setelah istirahat sejenak'
       ]
-    }
+    },
+    copy: 'Salin',
+    copied: 'Tersalin!'
   }
 } as const;
 
 export default function GuidelinesPage() {
   const { lang } = useLanguage();
   const t = translations[lang];
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<'yes' | 'no' | null>(null);
   const [copiedExample, setCopiedExample] = useState<string | null>(null);
 
   const handleCopy = (text: string) => {
@@ -329,33 +303,6 @@ export default function GuidelinesPage() {
             <h1 className="text-4xl font-bold mb-4">{t.title}</h1>
             <p className="text-xl text-neutral-400">{t.subtitle}</p>
           </div>
-
-          <Card className="bg-neutral-900 border-neutral-800 p-6">
-            <h2 className="text-2xl font-semibold mb-4">{t.checklist.title}</h2>
-            <div className="space-y-4">
-              {t.checklist.items.map((item: string, index: number) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <Checkbox
-                    id={`item-${index}`}
-                    checked={checkedItems.includes(item)}
-                    onCheckedChange={(checked) => {
-                      setCheckedItems(prev =>
-                        checked
-                          ? [...prev, item]
-                          : prev.filter(i => i !== item)
-                      );
-                    }}
-                  />
-                  <label
-                    htmlFor={`item-${index}`}
-                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {item}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </Card>
 
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="bg-neutral-900 border-neutral-800 p-6">
@@ -413,6 +360,8 @@ export default function GuidelinesPage() {
                 <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
                   {key === 'prohibited' ? (
                     <AlertTriangle className="w-6 h-6 text-red-500" />
+                  ) : key === 'quality' ? (
+                    <CheckCircle2 className="w-6 h-6 text-yellow-500" />
                   ) : (
                     <CheckCircle2 className={`w-6 h-6 ${
                       key === 'general' ? 'text-green-500' :
@@ -427,6 +376,8 @@ export default function GuidelinesPage() {
                     <li key={index} className="flex items-start gap-2 text-neutral-300">
                       {key === 'prohibited' ? (
                         <XCircle className="w-5 h-5 text-red-500 shrink-0" />
+                      ) : key === 'quality' ? (
+                        <span className="text-yellow-500">•</span>
                       ) : (
                         <span className={
                           key === 'general' ? 'text-green-500' :
@@ -458,11 +409,13 @@ export default function GuidelinesPage() {
             </Card>
 
             <Card className="bg-neutral-900 border-neutral-800 p-6">
-              <h2 className="text-2xl font-semibold mb-4">{t.sections.quality.title}</h2>
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                {t.sections.review.title}
+              </h2>
               <ul className="space-y-3">
-                {t.sections.quality.items.map((item, index) => (
+                {t.sections.review.items.map((item: string, index: number) => (
                   <li key={index} className="flex items-start gap-2 text-neutral-300">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                    <CheckCircle2 className="text-green-500 shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -480,34 +433,6 @@ export default function GuidelinesPage() {
               ))}
             </div>
           </Card>
-
-          {!feedback && (
-            <Card className="bg-neutral-900 border-neutral-800 p-6">
-              <h3 className="text-lg font-medium mb-4">{t.feedback.title}</h3>
-              <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setFeedback('yes')}
-                  className="flex items-center gap-2"
-                >
-                  <ThumbsUp className="w-4 h-4" />
-                  {t.feedback.yes}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setFeedback('no')}
-                  className="flex items-center gap-2"
-                >
-                  <ThumbsDown className="w-4 h-4" />
-                  {t.feedback.no}
-                </Button>
-              </div>
-            </Card>
-          )}
-
-          {feedback && (
-            <p className="text-center text-neutral-400">{t.feedback.thanks}</p>
-          )}
         </div>
       </div>
     </div>

@@ -326,18 +326,18 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white pt-20">
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
           <h1 className="text-3xl font-bold">{t.adminDashboard}</h1>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <Link href={`/${lang}/admin/translations`}>
-              <Button className="bg-violet-600 hover:bg-violet-500">
+              <Button className="bg-violet-600 hover:bg-violet-500 w-full sm:w-auto">
                 <FileText className="w-4 h-4 mr-2" />
                 {t.manageContent}
               </Button>
             </Link>
             <Link href={`/${lang}/admin/settings`}>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Settings className="w-4 h-4 mr-2" />
                 {t.adminSettings}
               </Button>
@@ -345,54 +345,54 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                 <Users className="w-5 h-5 text-blue-500" />
                 {t.totalUsers}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats.totalUsers}</p>
+            <CardContent className="pt-0">
+              <p className="text-2xl md:text-3xl font-bold">{stats.totalUsers}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                 <Star className="w-5 h-5 text-yellow-500" />
                 {t.totalReviews}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats.totalReviews}</p>
+            <CardContent className="pt-0">
+              <p className="text-2xl md:text-3xl font-bold">{stats.totalReviews}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                 <BookmarkCheck className="w-5 h-5 text-green-500" />
                 {t.totalBookmarks}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats.totalBookmarks}</p>
+            <CardContent className="pt-0">
+              <p className="text-2xl md:text-3xl font-bold">{stats.totalBookmarks}</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                 <PieChartIcon className="w-5 h-5 text-violet-500" />
                 {t.translationStatus}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
+            <CardContent className="pt-0">
+              <div className="h-[250px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -416,22 +416,22 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                 <BarChartIcon className="w-5 h-5 text-violet-500" />
                 {t.topContributors}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
+            <CardContent className="pt-0">
+              <div className="h-[250px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsBarChart
                     data={stats.topContributors}
                     layout="vertical"
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
                   >
                     <XAxis type="number" />
-                    <YAxis type="category" dataKey="username" width={150} />
+                    <YAxis type="category" dataKey="username" width={100} />
                     <Tooltip />
                     <Bar dataKey="contributions" fill="#8b5cf6" />
                   </RechartsBarChart>
@@ -441,40 +441,40 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <CardTitle>{t.recentReviews}</CardTitle>
-              <CardDescription>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="text-base md:text-lg">{t.recentReviews}</CardTitle>
+              <CardDescription className="text-sm">
                 {t.monitorReviews}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pt-0">
+              <div className="space-y-3 md:space-y-4">
                 {stats.recentReviews.map((review) => (
                   <div
                     key={review.id}
-                    className="flex items-start justify-between p-4 bg-neutral-800 rounded-lg"
+                    className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-3 md:p-4 bg-neutral-800 rounded-lg gap-3 sm:gap-4"
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
+                    <div className="space-y-2 min-w-0 flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <span className="font-medium text-sm md:text-base break-words">
                           {review.profiles?.username || review.profiles?.email || t.anonymous}
                         </span>
-                        <span className="text-sm text-neutral-400">
+                        <span className="text-xs md:text-sm text-neutral-400">
                           {formatDate(review.created_at)}
                         </span>
-                        <div className="flex items-center text-yellow-500">
+                        <div className="flex items-center text-yellow-500 text-sm">
                           <Star className="w-4 h-4" />
                           <span>{review.rating}/10</span>
                         </div>
                       </div>
-                      <p className="text-neutral-300">{review.review}</p>
+                      <p className="text-neutral-300 text-sm md:text-base break-words line-clamp-3">{review.review}</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-red-400 hover:text-red-300 hover:bg-red-950/50"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-950/50 flex-shrink-0"
                       onClick={() => handleDeleteReview(review.id)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -486,30 +486,30 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="bg-neutral-900 border-neutral-800">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>{t.pendingTranslations}</CardTitle>
+            <CardHeader className="pb-3 md:pb-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <CardTitle className="text-base md:text-lg">{t.pendingTranslations}</CardTitle>
                 <Link href={`/${lang}/admin/translations`}>
-                  <Button variant="link" className="text-violet-400 hover:text-violet-300">
+                  <Button variant="link" className="text-violet-400 hover:text-violet-300 p-0 h-auto text-sm">
                     {t.viewAll}
                   </Button>
                 </Link>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 {t.contentManagement}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
-                <div className="flex items-center gap-4">
+            <CardContent className="pt-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 bg-neutral-800 rounded-lg gap-4">
+                <div className="flex items-center gap-3 md:gap-4">
                   <FileText className="w-8 h-8 text-violet-500" />
                   <div>
-                    <p className="text-2xl font-bold">{stats.pendingTranslations}</p>
-                    <p className="text-sm text-neutral-400">{t.pendingTranslations}</p>
+                    <p className="text-xl md:text-2xl font-bold">{stats.pendingTranslations}</p>
+                    <p className="text-xs md:text-sm text-neutral-400">{t.pendingTranslations}</p>
                   </div>
                 </div>
                 <Link href={`/${lang}/admin/translations`}>
-                  <Button className="bg-violet-600 hover:bg-violet-500">
+                  <Button className="bg-violet-600 hover:bg-violet-500 w-full sm:w-auto">
                     {t.goToContent}
                   </Button>
                 </Link>

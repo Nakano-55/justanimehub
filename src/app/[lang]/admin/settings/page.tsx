@@ -318,22 +318,22 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white pt-20">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center gap-3 mb-8">
           <Settings className="w-8 h-8 text-violet-500" />
-          <h1 className="text-3xl font-bold">{t.settings}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t.settings}</h1>
         </div>
 
         <div className="space-y-8">
-          <Card className="bg-neutral-900 border-neutral-800 p-6">
+          <Card className="bg-neutral-900 border-neutral-800 p-4 md:p-6">
             <div className="flex items-center gap-3 mb-6">
               <Shield className="w-6 h-6 text-violet-500" />
-              <h2 className="text-xl font-semibold">{t.adminUsers}</h2>
-              <span className="text-sm text-neutral-400">({adminUsers.length} total)</span>
+              <h2 className="text-lg md:text-xl font-semibold">{t.adminUsers}</h2>
+              <span className="text-xs md:text-sm text-neutral-400">({adminUsers.length} total)</span>
             </div>
 
             <div className="space-y-6">
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Input
                     type="email"
@@ -351,7 +351,7 @@ export default function AdminSettingsPage() {
                 <Button
                   onClick={handleAddAdmin}
                   disabled={isAdding || !newAdminEmail.trim()}
-                  className="bg-violet-600 hover:bg-violet-500"
+                  className="bg-violet-600 hover:bg-violet-500 w-full sm:w-auto"
                 >
                   {isAdding ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -364,56 +364,58 @@ export default function AdminSettingsPage() {
 
               <div className="space-y-4">
                 {adminUsers.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-400">
+                  <div className="text-center py-8 text-neutral-400 text-sm md:text-base">
                     No admin users found
                   </div>
                 ) : (
                   adminUsers.map((admin) => (
                     <div
                       key={admin.id}
-                      className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-800 rounded-lg gap-3 sm:gap-4"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
                         <Users className="w-5 h-5 text-violet-500" />
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                             <Mail className="w-4 h-4 text-neutral-500" />
-                            <span>{admin.email}</span>
+                            <span className="break-all text-sm md:text-base">{admin.email}</span>
                             {admin.id === currentUserId && (
-                              <span className="text-xs bg-violet-600 text-white px-2 py-1 rounded">
+                              <span className="text-xs bg-violet-600 text-white px-2 py-1 rounded self-start">
                                 You
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-neutral-500">
+                          <p className="text-xs md:text-sm text-neutral-500 mt-1">
                             {t.createdAt}: {formatDate(admin.created_at)}
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveAdmin(admin.id)}
-                        disabled={
-                          removingIds.has(admin.id) || 
-                          admin.id === currentUserId || 
-                          adminUsers.length <= 1
-                        }
-                        className="text-red-400 hover:text-red-300 hover:bg-red-950/50 disabled:opacity-50"
-                        title={
-                          admin.id === currentUserId 
-                            ? t.cannotRemoveSelf 
-                            : adminUsers.length <= 1 
-                            ? t.mustHaveOneAdmin 
-                            : t.remove
-                        }
-                      >
-                        {removingIds.has(admin.id) ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </Button>
+                      <div className="flex justify-end sm:justify-start">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveAdmin(admin.id)}
+                          disabled={
+                            removingIds.has(admin.id) || 
+                            admin.id === currentUserId || 
+                            adminUsers.length <= 1
+                          }
+                          className="text-red-400 hover:text-red-300 hover:bg-red-950/50 disabled:opacity-50 flex-shrink-0"
+                          title={
+                            admin.id === currentUserId 
+                              ? t.cannotRemoveSelf 
+                              : adminUsers.length <= 1 
+                              ? t.mustHaveOneAdmin 
+                              : t.remove
+                          }
+                        >
+                          {removingIds.has(admin.id) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
