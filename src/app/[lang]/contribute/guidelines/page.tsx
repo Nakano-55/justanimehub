@@ -147,15 +147,6 @@ const translations = {
           'Verify accuracy against original source material'
         ]
       },
-      review: {
-        title: 'Review Process',
-        items: [
-          'All contributions are reviewed by our moderation team',
-          'Reviews typically take 24-48 hours to complete',
-          'You will receive email notifications about review status',
-          'Approved content becomes immediately visible to all users'
-        ]
-      }
     },
     tips: {
       title: 'Pro Tips',
@@ -260,15 +251,6 @@ const translations = {
           'Verifikasi akurasi terhadap materi sumber asli'
         ]
       },
-      review: {
-        title: 'Proses Review',
-        items: [
-          'Semua kontribusi ditinjau oleh tim moderasi kami',
-          'Review biasanya memakan waktu 24-48 jam',
-          'Anda akan menerima notifikasi email tentang status review',
-          'Konten yang disetujui langsung terlihat oleh semua pengguna'
-        ]
-      }
     },
     tips: {
       title: 'Tips Pro',
@@ -362,6 +344,8 @@ export default function GuidelinesPage() {
                     <AlertTriangle className="w-6 h-6 text-red-500" />
                   ) : key === 'quality' ? (
                     <CheckCircle2 className="w-6 h-6 text-yellow-500" />
+                  ) : key === 'workflow' ? (
+                    <CheckCircle2 className="w-6 h-6 text-orange-500" />
                   ) : (
                     <CheckCircle2 className={`w-6 h-6 ${
                       key === 'general' ? 'text-green-500' :
@@ -371,60 +355,46 @@ export default function GuidelinesPage() {
                   )}
                   {section.title}
                 </h2>
-                <ul className="space-y-3">
-                  {section.items.map((item: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2 text-neutral-300">
-                      {key === 'prohibited' ? (
-                        <XCircle className="w-5 h-5 text-red-500 shrink-0" />
-                      ) : key === 'quality' ? (
-                        <span className="text-yellow-500">•</span>
-                      ) : (
-                        <span className={
-                          key === 'general' ? 'text-green-500' :
-                          key === 'format' ? 'text-violet-500' :
-                          'text-blue-500'
-                        }>•</span>
-                      )}
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {key === 'workflow' ? (
+                  <div className="space-y-4">
+                    {section.items.map((item: string, index: number) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center">
+                          {index + 1}
+                        </div>
+                        <p className="text-neutral-300">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ul className="space-y-3">
+                    {section.items.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2 text-neutral-300">
+                        {key === 'prohibited' ? (
+                          <XCircle className="w-5 h-5 text-red-500 shrink-0" />
+                        ) : key === 'quality' ? (
+                          <span className="text-yellow-500">•</span>
+                        ) : (
+                          <span className={
+                            key === 'general' ? 'text-green-500' :
+                            key === 'format' ? 'text-violet-500' :
+                            'text-blue-500'
+                          }>•</span>
+                        )}
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Card>
             ))}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card className="bg-neutral-900 border-neutral-800 p-6">
-              <h2 className="text-2xl font-semibold mb-4">{t.sections.workflow.title}</h2>
-              <div className="space-y-4">
-                {t.sections.workflow.items.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center">
-                      {index + 1}
-                    </div>
-                    <p className="text-neutral-300">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card className="bg-neutral-900 border-neutral-800 p-6">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                {t.sections.review.title}
-              </h2>
-              <ul className="space-y-3">
-                {t.sections.review.items.map((item: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2 text-neutral-300">
-                    <CheckCircle2 className="text-green-500 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          </div>
-
           <Card className="bg-neutral-900 border-neutral-800 p-6">
-            <h2 className="text-2xl font-semibold mb-4">{t.tips.title}</h2>
+            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-6 h-6 text-blue-500" />
+              {t.tips.title}
+            </h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {t.tips.items.map((tip, index) => (
                 <div key={index} className="bg-neutral-800 rounded-lg p-4">
@@ -433,6 +403,7 @@ export default function GuidelinesPage() {
               ))}
             </div>
           </Card>
+
         </div>
       </div>
     </div>
