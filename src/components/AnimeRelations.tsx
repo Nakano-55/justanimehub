@@ -111,7 +111,7 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<a
       const response = await fetch(url);
       if (!response.ok) {
         if (response.status === 429) {
-          await new Promise(resolve => setTimeout(resolve, delay * 2));
+          await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
           continue;
         }
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -120,7 +120,7 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<a
       return data;
     } catch (error) {
       if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
     }
   }
 }
@@ -142,43 +142,74 @@ export function AnimeRelations({ animeId, lang }: AnimeRelationsProps) {
         relation.entry && Array.isArray(relation.entry) && relation.entry.length > 0
       );
 
-      const enrichedRelations = await Promise.all(validRelations.map(async (relation: AnimeRelation) => {
-        const enrichedEntries = await Promise.all(relation.entry.map(async (entry: AnimeEntry) => {
-          if (entry.type?.toLowerCase() === 'anime') {
-            try {
-              const animeData = await fetchWithRetry(`https://api.jikan.moe/v4/anime/${entry.mal_id}/full`);
-              return {
-                ...entry,
-                images: animeData.data.images,
-                title: animeData.data.title
-              };
-            } catch (error) {
-              console.error(`Error fetching details for anime ${entry.mal_id}:`, error);
-              return entry;
-            }
-          } else if (entry.type?.toLowerCase() === 'manga') {
-            try {
-              const mangaData = await fetchWithRetry(`https://api.jikan.moe/v4/manga/${entry.mal_id}/full`);
-              return {
-                ...entry,
-                images: mangaData.data.images,
-                title: mangaData.data.title
-              };
-            } catch (error) {
-              console.error(`Error fetching details for manga ${entry.mal_id}:`, error);
-              return entry;
-            }
+      // Show basic relations first, then enrich with details
+      setRelations(validRelations);
+      
+      // Collect all entries that need enrichment
+      const entriesToEnrich: Array<{
+        relationIndex: number;
+        entryIndex: number;
+        entry: AnimeEntry;
+        type: 'anime' | 'manga';
+      }> = [];
+      
+      validRelations.forEach((relation: AnimeRelation, relationIndex: number) => {
+        relation.entry.forEach((entry: AnimeEntry, entryIndex: number) => {
+          const type = entry.type?.toLowerCase();
+          if (type === 'anime' || type === 'manga') {
+            entriesToEnrich.push({
+              relationIndex,
+              entryIndex,
+              entry,
+              type: type as 'anime' | 'manga'
+            });
           }
-          return entry;
+        });
+      });
+      
+      // Batch process enrichment with concurrency limit
+      const batchSize = 3; // Limit concurrent requests
+      const enrichedData: { [key: string]: any } = {};
+      
+      for (let i = 0; i < entriesToEnrich.length; i += batchSize) {
+        const batch = entriesToEnrich.slice(i, i + batchSize);
+        
+        await Promise.all(batch.map(async ({ relationIndex, entryIndex, entry, type }) => {
+          try {
+            // Add small delay between batches to avoid rate limiting
+            if (i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            const endpoint = type === 'anime' 
+              ? `https://api.jikan.moe/v4/anime/${entry.mal_id}`
+              : `https://api.jikan.moe/v4/manga/${entry.mal_id}`;
+            
+            const data = await fetchWithRetry(endpoint);
+            enrichedData[`${relationIndex}-${entryIndex}`] = {
+              images: data.data.images,
+              title: data.data.title
+            };
+            
+            // Update relations progressively
+            setRelations(prevRelations => {
+              const newRelations = [...prevRelations];
+              if (newRelations[relationIndex] && newRelations[relationIndex].entry[entryIndex]) {
+                newRelations[relationIndex].entry[entryIndex] = {
+                  ...newRelations[relationIndex].entry[entryIndex],
+                  images: data.data.images,
+                  title: data.data.title
+                };
+              }
+              return newRelations;
+            });
+            
+          } catch (error) {
+            console.error(`Error fetching details for ${type} ${entry.mal_id}:`, error);
+          }
         }));
+      }
 
-        return {
-          ...relation,
-          entry: enrichedEntries
-        };
-      }));
-
-      setRelations(enrichedRelations || []);
     } catch (error) {
       console.error('Error fetching relations:', error);
       setError(t.error);

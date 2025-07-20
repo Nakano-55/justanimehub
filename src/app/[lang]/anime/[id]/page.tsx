@@ -59,6 +59,7 @@ interface PageTranslations {
   of: string;
   reviews: string;
   discussions: string;
+  relations: string;
 }
 
 const pageTranslations: Record<Language, PageTranslations> = {
@@ -95,7 +96,8 @@ const pageTranslations: Record<Language, PageTranslations> = {
     page: 'Page',
     of: 'of',
     reviews: 'Reviews',
-    discussions: 'Discussions'
+    discussions: 'Discussions',
+    relations: 'Relations'
   },
   id: {
     back: 'Kembali ke Daftar',
@@ -130,7 +132,8 @@ const pageTranslations: Record<Language, PageTranslations> = {
     page: 'Halaman',
     of: 'dari',
     reviews: 'Ulasan',
-    discussions: 'Diskusi'
+    discussions: 'Diskusi',
+    relations: 'Relasi'
   }
 };
 
@@ -584,7 +587,7 @@ export default function AnimeDetailPage() {
                     className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
                   >
                     <GitBranch className="w-4 h-4" />
-                    <span className="hidden md:inline">Relations</span>
+                    <span className="hidden md:inline">{t.relations}</span>
                   </TabsTrigger>
                 {anime.trailer?.youtube_id && (
                     <TabsTrigger 
