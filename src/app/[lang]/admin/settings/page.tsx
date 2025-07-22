@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/components/LanguageProvider';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,7 @@ const translations = {
     cannotRemoveSelf: 'You cannot remove yourself as admin',
     mustHaveOneAdmin: 'There must be at least one admin user',
     removing: 'Removing...',
+    you: 'You',
   },
   id: {
     settings: 'Pengaturan Admin',
@@ -69,6 +71,7 @@ const translations = {
     cannotRemoveSelf: 'Anda tidak dapat menghapus diri sendiri sebagai admin',
     mustHaveOneAdmin: 'Harus ada setidaknya satu pengguna admin',
     removing: 'Menghapus...',
+    you: 'Anda',
   },
 } as const;
 
@@ -82,7 +85,7 @@ export default function AdminSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const supabase = createClientComponentClient<Database>();
-  const [lang, setLang] = useState<Language>('en');
+  const { lang } = useLanguage();
   const t = translations[lang];
 
   useEffect(() => {
@@ -381,7 +384,7 @@ export default function AdminSettingsPage() {
                             <span className="break-all text-sm md:text-base">{admin.email}</span>
                             {admin.id === currentUserId && (
                               <span className="text-xs bg-violet-600 text-white px-2 py-1 rounded self-start">
-                                You
+                                {t.you}
                               </span>
                             )}
                           </div>

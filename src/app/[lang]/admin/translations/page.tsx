@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import {
@@ -128,7 +129,25 @@ export default function AdminContentPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const supabase = createClientComponentClient<Database>();
-  const t = translations['en']; // You can make this dynamic based on user preference
+  const { lang } = useLanguage();
+  const t = translations[lang];
+
+  // Filter content types based on selected entity type
+  const getAvailableContentTypes = (): ContentType[] => {
+    if (selectedEntityType === 'anime') {
+      return ['anime_synopsis', 'anime_background'];
+    } else {
+      return ['character_description'];
+    }
+  };
+
+  // Update selected content type when entity type changes
+  useEffect(() => {
+    const availableTypes = getAvailableContentTypes();
+    if (!availableTypes.includes(selectedType)) {
+      setSelectedType(availableTypes[0]);
+    }
+  }, [selectedEntityType]);
 
   useEffect(() => {
     fetchContent();
@@ -488,9 +507,13 @@ export default function AdminContentPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-neutral-900 border-neutral-700">
-                    <SelectItem value="character_description">{t.characterDescriptions}</SelectItem>
-                    <SelectItem value="anime_synopsis">{t.animeSynopsis}</SelectItem>
-                    <SelectItem value="anime_background">{t.animeBackground}</SelectItem>
+                    {getAvailableContentTypes().map((contentType) => (
+                      <SelectItem key={contentType} value={contentType}>
+                        {contentType === 'character_description' ? t.characterDescriptions :
+                         contentType === 'anime_synopsis' ? t.animeSynopsis :
+                         t.animeBackground}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
