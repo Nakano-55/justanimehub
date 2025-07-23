@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -62,6 +62,10 @@ interface PageTranslations {
   reviews: string;
   discussions: string;
   relations: string;
+  staff: string;
+  openingThemes: string;
+  endingThemes: string;
+  position: string;
 }
 
 const pageTranslations: Record<Language, PageTranslations> = {
@@ -101,7 +105,11 @@ const pageTranslations: Record<Language, PageTranslations> = {
     of: 'of',
     reviews: 'Reviews',
     discussions: 'Discussions',
-    relations: 'Relations'
+    relations: 'Relations',
+    staff: 'Staff',
+    openingThemes: 'Opening Themes',
+    endingThemes: 'Ending Themes',
+    position: 'Position'
   },
   id: {
     back: 'Kembali ke Daftar',
@@ -139,7 +147,11 @@ const pageTranslations: Record<Language, PageTranslations> = {
     of: 'dari',
     reviews: 'Ulasan',
     discussions: 'Diskusi',
-    relations: 'Relasi'
+    relations: 'Relasi',
+    staff: 'Staf',
+    openingThemes: 'Tema Pembuka',
+    endingThemes: 'Tema Penutup',
+    position: 'Posisi'
   }
 };
 
@@ -172,6 +184,10 @@ interface AnimeDetails {
   demographics: Array<{ name: string }>;
   trailer?: { youtube_id: string };
   type: string;
+  theme?: {
+    openings: string[];
+    endings: string[];
+  };
 }
 
 interface Character {
@@ -191,6 +207,19 @@ interface Picture {
   jpg: {
     large_image_url: string;
   };
+}
+
+interface StaffMember {
+  person: {
+    mal_id: number;
+    name: string;
+    images: {
+      jpg: {
+        image_url: string;
+      };
+    };
+  };
+  positions: string[];
 }
 
 async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<any> {
@@ -215,6 +244,7 @@ export default function AnimeDetailPage() {
   const { getTranslation } = useTranslation();
   const [anime, setAnime] = useState<AnimeDetails | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [pictures, setPictures] = useState<Picture[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -244,11 +274,15 @@ export default function AnimeDetailPage() {
         const [animeData, charactersData, picturesData] = await Promise.all([
           fetchWithRetry(`https://api.jikan.moe/v4/anime/${id}/full`),
           fetchWithRetry(`https://api.jikan.moe/v4/anime/${id}/characters`),
-          fetchWithRetry(`https://api.jikan.moe/v4/anime/${id}/pictures`)
+          fetchWithRetry(`https://api.jikan.moe/v4/anime/${id}/pictures`),
+          fetchWithRetry(`https://api.jikan.moe/v4/anime/${id}/staff`)
         ]);
+
+        const staffData = await fetchWithRetry(`https://api.jikan.moe/v4/anime/${id}/staff`);
 
         setAnime(animeData.data);
         setCharacters(charactersData.data);
+        setStaff(staffData.data);
         setPictures(picturesData.data);
 
         if (lang !== 'en' && animeData.data) {
@@ -427,7 +461,7 @@ export default function AnimeDetailPage() {
 
               <div className="space-y-2 md:space-y-3 text-xs md:text-sm">
                 <div className="flex items-start">
-                  <Tv className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Tv className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.type}</p>
                     <p className="font-medium">{anime.type || t.unknown}</p>
@@ -435,7 +469,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Play className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Play className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.episodes}</p>
                     <p className="font-medium">{anime.episodes || t.unknown}</p>
@@ -443,7 +477,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Clock className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Clock className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.duration}</p>
                     <p className="font-medium">{anime.duration || t.unknown}</p>
@@ -451,7 +485,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Info className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Info className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.status}</p>
                     <p className="font-medium">{anime.status || t.unknown}</p>
@@ -459,7 +493,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Calendar className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Calendar className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.season}</p>
                     <p className="font-medium">
@@ -469,7 +503,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <CalendarDays className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <CalendarDays className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.broadcast}</p>
                     <p className="font-medium">{anime.broadcast?.string || t.unknown}</p>
@@ -477,7 +511,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Building2 className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Building2 className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.studios}</p>
                     <div className="font-medium">
@@ -490,7 +524,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Building2 className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Building2 className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.producers}</p>
                     <div className="font-medium">
@@ -503,7 +537,7 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Info className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Info className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.source}</p>
                     <p className="font-medium">{anime.source || t.unknown}</p>
@@ -511,12 +545,54 @@ export default function AnimeDetailPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <Globe className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <Globe className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
                   <div>
                     <p className="text-neutral-400">{t.rating}</p>
                     <p className="font-medium">{formatRating(anime.rating)}</p>
                   </div>
                 </div>
+
+                {anime.theme && (anime.theme.openings.length > 0 || anime.theme.endings.length > 0) && (
+                  <>
+                    {anime.theme.openings.length > 0 && (
+                      <div className="flex items-start">
+                        <Video className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
+                        <div>
+                          <p className="text-neutral-400">{t.openingThemes}</p>
+                          <div className="font-medium space-y-1">
+                            {anime.theme.openings.slice(0, 3).map((opening, index) => (
+                              <p key={index} className="text-sm">{opening}</p>
+                            ))}
+                            {anime.theme.openings.length > 3 && (
+                              <p className="text-xs text-neutral-500">
+                                +{anime.theme.openings.length - 3} more
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {anime.theme.endings.length > 0 && (
+                      <div className="flex items-start">
+                        <Video className="w-4 h-4 mr-2 mt-1 text-neutral-400 flex-shrink-0" />
+                        <div>
+                          <p className="text-neutral-400">{t.endingThemes}</p>
+                          <div className="font-medium space-y-1">
+                            {anime.theme.endings.slice(0, 3).map((ending, index) => (
+                              <p key={index} className="text-sm">{ending}</p>
+                            ))}
+                            {anime.theme.endings.length > 3 && (
+                              <p className="text-xs text-neutral-500">
+                                +{anime.theme.endings.length - 3} more
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -610,6 +686,15 @@ export default function AnimeDetailPage() {
                       <User className="w-4 h-4" />
                       <span className="hidden md:inline">{t.characters}</span>
                     </TabsTrigger>
+                )}
+                {staff.length > 0 && (
+                  <TabsTrigger 
+                    value="staff"
+                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span className="hidden md:inline">{t.staff}</span>
+                  </TabsTrigger>
                 )}
                   <TabsTrigger 
                     value="relations"
@@ -746,6 +831,45 @@ export default function AnimeDetailPage() {
                       </Button>
                     </div>
                   )}
+                </TabsContent>
+              )}
+
+              {staff.length > 0 && (
+                <TabsContent value="staff" className="mt-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 px-2 md:px-0">
+                    {staff.map((staffMember) => (
+                      <Card key={staffMember.person.mal_id} className="bg-neutral-900 border-neutral-800 overflow-hidden">
+                        <CardContent className="p-0">
+                          <div className="relative aspect-[3/4] overflow-hidden">
+                            <Image
+                              src={staffMember.person.images.jpg.image_url}
+                              alt={staffMember.person.name}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                            />
+                          </div>
+                          <div className="p-2 md:p-4">
+                            <h4 className="font-semibold text-xs md:text-sm mb-1 line-clamp-2">
+                              {staffMember.person.name}
+                            </h4>
+                            <div className="space-y-1">
+                              {staffMember.positions.slice(0, 2).map((position, index) => (
+                                <p key={index} className="text-xs md:text-sm text-neutral-400 line-clamp-1">
+                                  {position}
+                                </p>
+                              ))}
+                              {staffMember.positions.length > 2 && (
+                                <p className="text-xs text-neutral-500">
+                                  +{staffMember.positions.length - 2} more
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
               )}
 
