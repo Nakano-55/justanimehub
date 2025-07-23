@@ -43,6 +43,8 @@ interface PageTranslations {
   season: string;
   broadcast: string;
   studios: string;
+  producers: string;
+  source: string;
   rating: string;
   genres: string;
   themes: string;
@@ -81,6 +83,8 @@ const pageTranslations: Record<Language, PageTranslations> = {
     season: 'Season',
     broadcast: 'Broadcast',
     studios: 'Studios',
+    producers: 'Producers',
+    source: 'Source',
     rating: 'Rating',
     genres: 'Genres',
     themes: 'Themes',
@@ -117,6 +121,8 @@ const pageTranslations: Record<Language, PageTranslations> = {
     season: 'Musim',
     broadcast: 'Siaran',
     studios: 'Studio',
+    producers: 'Produser',
+    source: 'Sumber',
     rating: 'Rating',
     genres: 'Genre',
     themes: 'Tema',
@@ -159,6 +165,8 @@ interface AnimeDetails {
   season: string;
   broadcast?: { string: string };
   studios: Array<{ name: string }>;
+  producers: Array<{ name: string }>;
+  source: string;
   genres: Array<{ name: string }>;
   themes: Array<{ name: string }>;
   demographics: Array<{ name: string }>;
@@ -478,6 +486,27 @@ export default function AnimeDetailPage() {
                         : t.unknown
                       }
                     </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Building2 className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <div>
+                    <p className="text-neutral-400">{t.producers}</p>
+                    <div className="font-medium">
+                      {anime.producers && anime.producers.length > 0
+                        ? anime.producers.map(producer => producer.name).join(', ')
+                        : t.unknown
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Info className="w-4 h-4 mr-2 mt-1 text-neutral-400" />
+                  <div>
+                    <p className="text-neutral-400">{t.source}</p>
+                    <p className="font-medium">{anime.source || t.unknown}</p>
                   </div>
                 </div>
 

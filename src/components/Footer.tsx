@@ -32,8 +32,8 @@ const translations = {
     poweredBy: 'Didukung oleh',
     jikanApi: 'Jikan API',
     followUs: 'Ikuti Kami',
-    madeWith: 'For the love of anime,',
-    by: 'we build this world',
+    madeWith: 'Dari kecintaan pada anime,',
+    by: 'lahirlah dunia ini',
   },
 } as const;
 
@@ -112,7 +112,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/Nakano-55/justanimehub"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-neutral-400 hover:text-white transition-colors inline-flex items-center gap-2"
