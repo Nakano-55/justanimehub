@@ -285,7 +285,8 @@ export default function AnimeDetailPage() {
         setStaff(staffData.data);
         setPictures(picturesData.data);
 
-        if (lang !== 'en' && animeData.data) {
+        // Always check for user translations, regardless of language
+        if (animeData.data) {
           const [synopsisTrans, backgroundTrans] = await Promise.all([
             getTranslation(parseInt(id), 'anime', 'anime_synopsis', lang),
             getTranslation(parseInt(id), 'anime', 'anime_background', lang)

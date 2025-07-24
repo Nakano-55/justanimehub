@@ -133,15 +133,14 @@ export default function CharacterPage() {
         const data = await fetchCharacterDetails(id);
         setCharacter(data);
 
-        if (lang !== 'en') {
-          const translatedDesc = await getTranslation(
-            parseInt(id),
-            'character',
-            'character_description',
-            lang
-          );
-          setDescription(translatedDesc?.content || null);
-        }
+        // Always check for user translations, regardless of language
+        const translatedDesc = await getTranslation(
+          parseInt(id),
+          'character',
+          'character_description',
+          lang
+        );
+        setDescription(translatedDesc?.content || null);
       } catch (err) {
         console.error('Error fetching character:', err);
         setError(t.error);
