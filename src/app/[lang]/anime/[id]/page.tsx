@@ -660,11 +660,11 @@ export default function AnimeDetailPage() {
             </div>
 
             <Tabs defaultValue="synopsis" className="w-full min-w-0">
-              <div className="w-full px-2 md:px-0">
-                <TabsList className="bg-neutral-900 p-1 w-full flex justify-between gap-2">
+              <div className="w-full px-2 md:px-0 overflow-x-auto">
+                <TabsList className="bg-neutral-900 p-1 min-w-max flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-600 scrollbar-track-neutral-800">
                   <TabsTrigger 
                     value="synopsis"
-                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                   >
                     <FileText className="w-4 h-4" />
                     <span className="hidden md:inline">{t.synopsis}</span>
@@ -672,7 +672,7 @@ export default function AnimeDetailPage() {
                 {anime.background && (
                     <TabsTrigger 
                       value="background"
-                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                      className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                     >
                       <BookOpen className="w-4 h-4" />
                       <span className="hidden md:inline">{t.background}</span>
@@ -681,7 +681,7 @@ export default function AnimeDetailPage() {
                 {characters.length > 0 && (
                     <TabsTrigger 
                       value="characters"
-                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                      className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                     >
                       <User className="w-4 h-4" />
                       <span className="hidden md:inline">{t.characters}</span>
@@ -690,7 +690,7 @@ export default function AnimeDetailPage() {
                 {staff.length > 0 && (
                   <TabsTrigger 
                     value="staff"
-                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                   >
                     <Users className="w-4 h-4" />
                     <span className="hidden md:inline">{t.staff}</span>
@@ -698,7 +698,7 @@ export default function AnimeDetailPage() {
                 )}
                   <TabsTrigger 
                     value="relations"
-                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                   >
                     <GitBranch className="w-4 h-4" />
                     <span className="hidden md:inline">{t.relations}</span>
@@ -706,7 +706,7 @@ export default function AnimeDetailPage() {
                 {anime.trailer?.youtube_id && (
                     <TabsTrigger 
                       value="trailer"
-                      className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                      className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                     >
                       <PlaySquare className="w-4 h-4" />
                       <span className="hidden md:inline">{t.trailer}</span>
@@ -714,14 +714,14 @@ export default function AnimeDetailPage() {
                 )}
                   <TabsTrigger 
                     value="reviews"
-                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                   >
                     <Star className="w-4 h-4" />
                     <span className="hidden md:inline">{t.reviews}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="discussions"
-                    className="flex-1 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
                   >
                     <MessageSquare className="w-4 h-4" />
                     <span className="hidden md:inline">{t.discussions}</span>
