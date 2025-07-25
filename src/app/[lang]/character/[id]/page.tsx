@@ -120,7 +120,11 @@ export default function CharacterPage() {
   const { lang } = useLanguage();
   const { getTranslation } = useTranslation();
   const [character, setCharacter] = useState<Character | null>(null);
-  const [description, setDescription] = useState<string | null>(null);
+  const [description, setDescription] = useState<{
+    content: string;
+    contributor?: string;
+    date?: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const t = translations[lang];
@@ -140,7 +144,26 @@ export default function CharacterPage() {
           'character_description',
           lang
         );
-        setDescription(translatedDesc?.content || null);
+        
+        if (translatedDesc) {
+          const contributorName = translatedDesc.profiles?.username || 
+                                translatedDesc.profiles?.full_name || 
+                                translatedDesc.profiles?.email || 
+                                'Anonymous';
+          
+          const contributionDate = new Date(translatedDesc.created_at).toLocaleDateString(
+            lang === 'id' ? 'id-ID' : 'en-US',
+            { year: 'numeric', month: 'long', day: 'numeric' }
+          );
+
+          setDescription({
+            content: translatedDesc.content,
+            contributor: contributorName,
+            date: contributionDate
+          });
+        } else {
+          setDescription(null);
+        }
       } catch (err) {
         console.error('Error fetching character:', err);
         setError(t.error);
@@ -306,8 +329,22 @@ export default function CharacterPage() {
                   <div className="space-y-4">
                     <h2 className="text-lg md:text-xl font-semibold">{t.about}</h2>
                     <p className="text-neutral-200 whitespace-pre-line break-words text-sm md:text-base text-justify">
-                      {description || character.about || t.noDescription}
+                      {description?.content || character.about || t.noDescription}
                     </p>
+                    {description && (
+                      <div className="mt-4 pt-4 border-t border-neutral-800">
+                        <div className="flex items-center gap-2 text-sm text-neutral-400">
+                          <span>
+                            {lang === 'en' ? 'Contributor' : 'Kontributor'}: 
+                          </span>
+                          <span className="text-violet-400 font-medium">
+                            {description.contributor}
+                          </span>
+                          <span>•</span>
+                          <span>{description.date}</span>
+                        </div>
+                      </div>
+                    )}
                     <TranslationContributor
                       entityId={character.mal_id}
                       entityType="character"

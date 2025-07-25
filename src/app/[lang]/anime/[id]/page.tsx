@@ -250,8 +250,8 @@ export default function AnimeDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [translations, setTranslations] = useState<{
-    synopsis: string | null;
-    background: string | null;
+    synopsis: { content: string; contributor?: string; date?: string } | null;
+    background: { content: string; contributor?: string; date?: string } | null;
   }>({
     synopsis: null,
     background: null
@@ -292,9 +292,28 @@ export default function AnimeDetailPage() {
             getTranslation(parseInt(id), 'anime', 'anime_background', lang)
           ]);
 
+          const formatContributor = (translation: any) => {
+            if (!translation) return null;
+            
+            const contributorName = translation.profiles?.username || 
+                                  translation.profiles?.full_name || 
+                                  translation.profiles?.email || 
+                                  'Anonymous';
+            
+            const contributionDate = new Date(translation.created_at).toLocaleDateString(
+              lang === 'id' ? 'id-ID' : 'en-US',
+              { year: 'numeric', month: 'long', day: 'numeric' }
+            );
+
+            return {
+              content: translation.content,
+              contributor: contributorName,
+              date: contributionDate
+            };
+          };
           setTranslations({
-            synopsis: synopsisTrans?.content || null,
-            background: backgroundTrans?.content || null
+            synopsis: formatContributor(synopsisTrans),
+            background: formatContributor(backgroundTrans)
           });
         }
       } catch (err) {
@@ -670,15 +689,13 @@ export default function AnimeDetailPage() {
                     <FileText className="w-4 h-4" />
                     <span className="hidden md:inline">{t.synopsis}</span>
                   </TabsTrigger>
-                {anime.background && (
-                    <TabsTrigger 
-                      value="background"
-                      className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span className="hidden md:inline">{t.background}</span>
-                    </TabsTrigger>
-                )}
+                  <TabsTrigger 
+                    value="background"
+                    className="flex-shrink-0 flex items-center justify-center gap-1 md:gap-2 data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-colors text-xs md:text-sm whitespace-nowrap px-3 py-2"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span className="hidden md:inline">{t.background}</span>
+                  </TabsTrigger>
                 {characters.length > 0 && (
                     <TabsTrigger 
                       value="characters"
@@ -733,8 +750,22 @@ export default function AnimeDetailPage() {
               <TabsContent value="synopsis" className="mt-4">
                 <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
                   <p className="text-neutral-200 leading-relaxed whitespace-pre-line text-sm md:text-base text-justify">
-                    {translations.synopsis || anime.synopsis}
+                    {translations.synopsis?.content || anime.synopsis}
                   </p>
+                  {translations.synopsis && (
+                    <div className="mt-4 pt-4 border-t border-neutral-800">
+                      <div className="flex items-center gap-2 text-sm text-neutral-400">
+                        <span>
+                          {lang === 'en' ? 'Contributor' : 'Kontributor'}: 
+                        </span>
+                        <span className="text-violet-400 font-medium">
+                          {translations.synopsis.contributor}
+                        </span>
+                        <span>•</span>
+                        <span>{translations.synopsis.date}</span>
+                      </div>
+                    </div>
+                  )}
                   <TranslationContributor
                     entityId={anime.mal_id}
                     entityType="anime"
@@ -745,22 +776,42 @@ export default function AnimeDetailPage() {
                 </div>
               </TabsContent>
 
-              {anime.background && (
-                <TabsContent value="background" className="mt-4">
-                  <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
-                    <p className="text-neutral-200 leading-relaxed whitespace-pre-line text-sm md:text-base text-justify">
-                      {translations.background || anime.background}
+              <TabsContent value="background" className="mt-4">
+                <div className="bg-neutral-900 rounded-lg p-4 md:p-6 mx-2 md:mx-0">
+                  {translations.background?.content || anime.background ? (
+                    <>
+                      <p className="text-neutral-200 leading-relaxed whitespace-pre-line text-sm md:text-base text-justify">
+                        {translations.background?.content || anime.background}
+                      </p>
+                      {translations.background && (
+                        <div className="mt-4 pt-4 border-t border-neutral-800">
+                          <div className="flex items-center gap-2 text-sm text-neutral-400">
+                            <span>
+                              {lang === 'en' ? 'Contributor' : 'Kontributor'}: 
+                            </span>
+                            <span className="text-violet-400 font-medium">
+                              {translations.background.contributor}
+                            </span>
+                            <span>•</span>
+                            <span>{translations.background.date}</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-neutral-400 text-center py-8">
+                      {lang === 'en' ? 'No background information available.' : 'Tidak ada informasi latar belakang.'}
                     </p>
-                    <TranslationContributor
-                      entityId={anime.mal_id}
-                      entityType="anime"
-                      contentType="anime_background"
-                      originalText={anime.background}
-                      currentLanguage={lang}
-                    />
-                  </div>
-                </TabsContent>
-              )}
+                  )}
+                  <TranslationContributor
+                    entityId={anime.mal_id}
+                    entityType="anime"
+                    contentType="anime_background"
+                    originalText={anime.background || ''}
+                    currentLanguage={lang}
+                  />
+                </div>
+              </TabsContent>
 
               {characters.length > 0 && (
                 <TabsContent value="characters" className="mt-4">
