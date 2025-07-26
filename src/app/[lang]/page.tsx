@@ -20,7 +20,7 @@ const translations = {
     welcome: 'Welcome to JustAnimeHub',
     subtitle: 'A collaborative anime encyclopedia with multilingual support. Discover, learn, and contribute to the world of anime in English and Indonesian.',
     browseAnime: 'Browse Anime',
-    startContributing: 'Start Contributing',
+    startContributing: 'Contribution Guidelines',
     features: {
       database: {
         title: 'Comprehensive Database',
@@ -40,7 +40,7 @@ const translations = {
     welcome: 'Selamat Datang di JustAnimeHub',
     subtitle: 'Ensiklopedia anime kolaboratif dengan dukungan multibahasa. Temukan, pelajari, dan berkontribusi dalam dunia anime dalam Bahasa Inggris dan Indonesia.',
     browseAnime: 'Jelajahi Anime',
-    startContributing: 'Mulai Berkontribusi',
+    startContributing: 'Pedoman Kontribusi',
     features: {
       database: {
         title: 'Database Lengkap',
