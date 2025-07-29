@@ -7,7 +7,6 @@ import { Github, Twitter } from 'lucide-react';
 const translations = {
   en: {
     about: 'About',
-    contact: 'Contact',
     guidelines: 'Guidelines',
     api: 'API',
     legal: 'Legal',
@@ -22,7 +21,6 @@ const translations = {
   },
   id: {
     about: 'Tentang',
-    contact: 'Kontak',
     guidelines: 'Panduan',
     api: 'API',
     legal: 'Legal',
@@ -54,14 +52,6 @@ export function Footer() {
                   className="text-neutral-400 hover:text-white transition-colors"
                 >
                   {t.about}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/${lang}/contact`}
-                  className="text-neutral-400 hover:text-white transition-colors"
-                >
-                  {t.contact}
                 </Link>
               </li>
               <li>
